@@ -5,311 +5,217 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lytala Admin — Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-:root {
-  --ink: #1a1714;
-  --ink-2: #4a453f;
-  --ink-3: #8a8076;
-  --parchment: #f8f4ee;
-  --cream: #ede8e0;
-  --gold: #b8913a;
-  --gold-light: #f5ead0;
-  --moss: #3d5a3e;
-  --moss-light: #daeada;
-  --rust: #8b3a2a;
-  --rust-light: #f5dbd8;
-  --sky: #2a4a6b;
-  --sky-light: #daeaf5;
-  --amber: #c87820;
-  --amber-light: #faebd0;
-  --purple: #5a3a7a;
-  --purple-light: #ead8f5;
-  --border: rgba(26,23,20,0.1);
-  --sidebar-w: 220px;
+:root{
+  --ink:#1a1714;--ink-2:#4a453f;--ink-3:#8a8076;
+  --parchment:#f8f4ee;--cream:#ede8e0;
+  --gold:#b8913a;--gold-light:#f5ead0;
+  --moss:#3d5a3e;--moss-light:#daeada;
+  --rust:#8b3a2a;--rust-light:#f5dbd8;
+  --sky:#2a4a6b;--sky-light:#daeaf5;
+  --amber:#c87820;--amber-light:#faebd0;
+  --purple:#5a3a7a;--purple-light:#ead8f5;
+  --border:rgba(26,23,20,0.1);
+  --sidebar-w:230px;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--ink);min-height:100vh;display:flex}
 
 /* LOGIN */
-#login-screen{
-  position:fixed;inset:0;
-  background:var(--ink);
-  display:flex;align-items:center;justify-content:center;
-  z-index:999;
-}
-.login-box{
-  background:var(--parchment);
-  border-radius:16px;
-  padding:2.5rem;
-  width:360px;
-  text-align:center;
-}
+#login-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:999}
+.login-box{background:var(--parchment);border-radius:16px;padding:2.5rem;width:360px;text-align:center}
 .login-logo{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--ink);margin-bottom:4px}
 .login-sub{font-size:0.78rem;color:var(--ink-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem}
-.login-box input{
-  width:100%;padding:0.875rem 1rem;
-  border:1px solid var(--border);border-radius:10px;
-  background:white;font-family:'DM Sans',sans-serif;
-  font-size:0.95rem;color:var(--ink);outline:none;
-  margin-bottom:10px;
-  transition:border-color 0.2s;
-}
+.login-box input{width:100%;padding:0.875rem 1rem;border:1px solid var(--border);border-radius:10px;background:white;font-family:'DM Sans',sans-serif;font-size:0.95rem;color:var(--ink);outline:none;margin-bottom:10px;transition:border-color 0.2s}
 .login-box input:focus{border-color:var(--gold)}
-.login-btn{
-  width:100%;padding:0.875rem;
-  background:var(--ink);color:var(--parchment);
-  border:none;border-radius:10px;
-  font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;
-  cursor:pointer;transition:background 0.2s;
-}
+.login-btn{width:100%;padding:0.875rem;background:var(--ink);color:var(--parchment);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;cursor:pointer;transition:background 0.2s}
 .login-btn:hover{background:var(--ink-2)}
 .login-err{font-size:0.82rem;color:var(--rust);margin-top:8px;display:none}
 
 /* LAYOUT */
-#app{display:none;width:100%;min-height:100vh;flex-direction:row}
+#app{display:none;width:100%;min-height:100vh}
 #app.show{display:flex}
 
 /* SIDEBAR */
-aside{
-  width:var(--sidebar-w);min-width:var(--sidebar-w);
-  background:var(--ink);
-  display:flex;flex-direction:column;
-  position:fixed;left:0;top:0;bottom:0;
-  z-index:50;
-}
-.sidebar-logo{
-  padding:1.5rem 1.25rem 1.25rem;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-}
-.sidebar-logo h1{font-family:'Playfair Display',serif;font-size:1.3rem;color:#e8d9b0;font-weight:600}
+aside{width:var(--sidebar-w);min-width:var(--sidebar-w);background:var(--ink);display:flex;flex-direction:column;position:fixed;left:0;top:0;bottom:0;z-index:50;overflow-y:auto}
+.sidebar-logo{padding:1.5rem 1.25rem 1.25rem;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-logo h1{font-family:'Playfair Display',serif;font-size:1.3rem;color:#e8d9b0}
 .sidebar-logo p{font-size:0.68rem;color:#6a6460;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px}
-nav.side-nav{flex:1;padding:1rem 0}
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:0.7rem 1.25rem;
-  color:#8a8076;font-size:0.875rem;
-  cursor:pointer;transition:all 0.15s;
-  border-left:2px solid transparent;
-  user-select:none;
-}
+nav.side-nav{flex:1;padding:0.75rem 0}
+.nav-group{padding:0.75rem 1.25rem 0.25rem;font-size:0.65rem;color:#4a453f;letter-spacing:0.12em;text-transform:uppercase;font-weight:500}
+.nav-item{display:flex;align-items:center;gap:10px;padding:0.65rem 1.25rem;color:#8a8076;font-size:0.875rem;cursor:pointer;transition:all 0.15s;border-left:2px solid transparent;user-select:none}
 .nav-item:hover{color:#e8d9b0;background:rgba(255,255,255,0.04)}
 .nav-item.active{color:#e8d9b0;border-left-color:var(--gold);background:rgba(255,255,255,0.06)}
-.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.7}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.7}
 .nav-item.active svg{opacity:1}
-.sidebar-footer{
-  padding:1rem 1.25rem;
-  border-top:1px solid rgba(255,255,255,0.08);
-  font-size:0.75rem;color:#4a453f;
-}
-.logout-btn{
-  display:flex;align-items:center;gap:8px;
-  color:#6a6460;cursor:pointer;font-size:0.8rem;
-  padding:0.5rem 0;transition:color 0.15s;
-  background:none;border:none;font-family:inherit;
-}
+.nav-badge{margin-left:auto;background:var(--rust);color:white;font-size:0.65rem;font-weight:500;padding:1px 7px;border-radius:100px;min-width:18px;text-align:center}
+.nb-amber{background:var(--amber)}
+.sidebar-footer{padding:1rem 1.25rem;border-top:1px solid rgba(255,255,255,0.08)}
+.logout-btn{display:flex;align-items:center;gap:8px;color:#6a6460;cursor:pointer;font-size:0.8rem;background:none;border:none;font-family:inherit;transition:color 0.15s;padding:0.4rem 0}
 .logout-btn:hover{color:#e8d9b0}
 
 /* MAIN */
-main{
-  margin-left:var(--sidebar-w);
-  flex:1;padding:2rem;
-  min-height:100vh;
-}
+main{margin-left:var(--sidebar-w);flex:1;padding:2rem;min-height:100vh}
 
-/* TOP BAR */
-.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:2rem;
-}
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.75rem;flex-wrap:wrap;gap:10px}
 .topbar h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ink)}
-.topbar-right{display:flex;align-items:center;gap:10px}
-.refresh-btn{
-  display:flex;align-items:center;gap:6px;
-  padding:0.5rem 1rem;border:1px solid var(--border);
-  border-radius:8px;background:white;cursor:pointer;
-  font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--ink-2);
-  transition:all 0.15s;
-}
-.refresh-btn:hover{border-color:var(--gold)}
+.topbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0.55rem 1rem;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:500;cursor:pointer;border:1px solid var(--border);background:white;color:var(--ink-2);transition:all 0.15s;white-space:nowrap}
+.btn:hover{background:var(--parchment)}
+.btn.primary{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
+.btn.primary:hover{background:var(--ink-2)}
+.btn.success{background:var(--moss);color:white;border-color:var(--moss)}
+.btn.success:hover{background:#2d4a2e}
+.btn.danger{border-color:var(--rust);color:var(--rust)}
+.btn.danger:hover{background:var(--rust-light)}
+.btn.pdf{background:var(--sky);color:white;border-color:var(--sky)}
+.btn.pdf:hover{background:#1e3a55}
+.btn svg{width:13px;height:13px;flex-shrink:0}
+.btn:disabled{opacity:0.5;cursor:not-allowed;transform:none!important}
 
 /* STAT CARDS */
-.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:2rem}
-.stat-card{
-  background:white;border:1px solid var(--border);
-  border-radius:12px;padding:1rem 1.25rem;
-  border-top:3px solid var(--card-accent,var(--gold));
-}
-.stat-card .num{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--ink)}
-.stat-card .lbl{font-size:0.72rem;color:var(--ink-3);letter-spacing:0.05em;margin-top:2px}
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:1.75rem}
+.stat-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;border-top:3px solid var(--card-accent,var(--gold));cursor:pointer;transition:box-shadow 0.15s}
+.stat-card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08)}
+.stat-card .num{font-family:'Playfair Display',serif;font-size:2rem;color:var(--ink);line-height:1}
+.stat-card .lbl{font-size:0.72rem;color:var(--ink-3);letter-spacing:0.04em;margin-top:4px}
 
-/* FILTERS */
-.filter-bar{
-  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-  margin-bottom:1.25rem;
-}
-.filter-bar select, .filter-bar input{
-  font-family:'DM Sans',sans-serif;font-size:0.85rem;
-  padding:0.5rem 0.875rem;border:1px solid var(--border);
-  border-radius:8px;background:white;color:var(--ink);outline:none;
-  transition:border-color 0.2s;
-}
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:1.25rem;background:white;border:1px solid var(--border);border-radius:10px;padding:0.75rem 1rem}
+.filter-bar select,.filter-bar input[type=text]{font-family:'DM Sans',sans-serif;font-size:0.85rem;padding:0.45rem 0.75rem;border:1px solid var(--border);border-radius:7px;background:var(--parchment);color:var(--ink);outline:none;transition:border-color 0.2s}
 .filter-bar select:focus,.filter-bar input:focus{border-color:var(--gold)}
-.filter-bar input{min-width:220px}
-.pill{
-  padding:5px 14px;border:1px solid var(--border);border-radius:100px;
-  font-size:0.78rem;cursor:pointer;background:white;color:var(--ink-2);
-  transition:all 0.15s;white-space:nowrap;
-}
-.pill:hover,.pill.active{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
+.filter-bar input[type=text]{min-width:200px}
 
 /* TABLE */
-.table-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden}
-table{width:100%;border-collapse:collapse;font-size:0.85rem}
+.table-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:0.84rem;min-width:780px}
 thead tr{background:var(--parchment);border-bottom:1px solid var(--border)}
-thead th{
-  padding:0.75rem 1rem;text-align:left;
-  font-size:0.7rem;font-weight:500;
-  letter-spacing:0.07em;text-transform:uppercase;
-  color:var(--ink-3);white-space:nowrap;
-}
+thead th{padding:0.75rem 1rem;text-align:left;font-size:0.68rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap}
 tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
 tbody tr:last-child{border-bottom:none}
-tbody tr:hover{background:var(--parchment)}
-td{padding:0.875rem 1rem;vertical-align:middle}
-.td-ticket{font-size:0.75rem;color:var(--ink-3);font-weight:500;letter-spacing:0.04em;white-space:nowrap}
-.td-nama{font-weight:500;font-size:0.88rem}
-.td-isi{color:var(--ink-2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.td-date{font-size:0.78rem;color:var(--ink-3);white-space:nowrap}
+tbody tr:hover{background:#fdfbf8}
+td{padding:0.8rem 1rem;vertical-align:middle}
+.td-ticket{font-size:0.72rem;color:var(--ink-3);font-weight:500;letter-spacing:0.04em;white-space:nowrap}
+.td-nama{font-weight:500;font-size:0.88rem;white-space:nowrap}
+.td-isi{color:var(--ink-2);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-date{font-size:0.75rem;color:var(--ink-3);white-space:nowrap}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:500;white-space:nowrap}
-.badge-pending{background:#f0f0ea;color:#8a8076}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:100px;font-size:0.7rem;font-weight:500;white-space:nowrap}
+.badge-pending{background:#f0efe8;color:#6a6460}
 .badge-diterima{background:var(--sky-light);color:var(--sky)}
 .badge-diskusi{background:var(--amber-light);color:var(--amber)}
 .badge-proses{background:var(--rust-light);color:var(--rust)}
 .badge-selesai{background:var(--moss-light);color:var(--moss)}
-.badge-cat{background:var(--cream);color:var(--ink-2);font-size:0.7rem}
-.mood-icon{font-size:1rem}
+.badge-cat{background:var(--cream);color:var(--ink-2)}
 
-/* ACTION BUTTONS */
-.action-btns{display:flex;gap:6px}
-.btn-sm{
-  padding:5px 12px;border-radius:6px;font-size:0.78rem;
-  font-family:'DM Sans',sans-serif;cursor:pointer;
-  border:1px solid var(--border);background:white;color:var(--ink-2);
-  transition:all 0.15s;white-space:nowrap;
-}
-.btn-sm:hover{background:var(--parchment)}
-.btn-sm.primary{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
-.btn-sm.primary:hover{background:var(--ink-2)}
-.btn-sm.danger{border-color:var(--rust);color:var(--rust)}
-.btn-sm.danger:hover{background:var(--rust-light)}
+/* CHARTS */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:1.75rem}
+.chart-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.chart-card h4{font-size:0.72rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:1rem}
+.bar-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:0.78rem;color:var(--ink-2);width:155px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;background:var(--cream);border-radius:100px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;transition:width 0.6s ease}
+.bar-num{font-size:0.75rem;color:var(--ink-3);min-width:20px;text-align:right;font-weight:500}
 
 /* MODAL */
-.modal-overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(26,23,20,0.5);z-index:200;
-  align-items:flex-start;justify-content:center;
-  padding:2rem;overflow-y:auto;
-}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,23,20,0.55);z-index:200;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
 .modal-overlay.show{display:flex}
-.modal{
-  background:white;border-radius:16px;
-  width:100%;max-width:680px;
-  margin:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,0.2);
-}
-.modal-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);
-}
+.modal{background:white;border-radius:16px;width:100%;max-width:720px;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
 .modal-header h3{font-family:'Playfair Display',serif;font-size:1.1rem}
-.modal-close{background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--ink-3);line-height:1}
-.modal-body{padding:1.5rem}
-.modal-footer{
-  display:flex;gap:8px;justify-content:flex-end;
-  padding:1rem 1.5rem;border-top:1px solid var(--border);
-}
+.modal-header .ticket-ref{font-size:0.72rem;color:var(--ink-3);margin-top:3px;letter-spacing:0.04em}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--ink-3);line-height:1;padding:4px;margin-left:8px}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:1.5rem;max-height:72vh;overflow-y:auto}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.5rem;border-top:1px solid var(--border);flex-wrap:wrap}
 
 /* FORM FIELDS */
 .field{margin-bottom:1.25rem}
-.field label{display:block;font-size:0.75rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
-.field select,.field textarea,.field input{
-  width:100%;font-family:'DM Sans',sans-serif;font-size:0.9rem;
-  color:var(--ink);background:var(--parchment);
-  border:1px solid var(--border);border-radius:8px;
-  padding:0.7rem 0.875rem;outline:none;transition:border-color 0.2s;
-}
+.field label{display:block;font-size:0.72rem;font-weight:500;letter-spacing:0.07em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.field label .hint{font-weight:300;text-transform:none;letter-spacing:0;color:var(--ink-3)}
+.field select,.field textarea,.field input[type=text]{width:100%;font-family:'DM Sans',sans-serif;font-size:0.9rem;color:var(--ink);background:var(--parchment);border:1px solid var(--border);border-radius:8px;padding:0.7rem 0.875rem;outline:none;transition:border-color 0.2s}
 .field select:focus,.field textarea:focus,.field input:focus{border-color:var(--gold);background:white}
-.field textarea{resize:vertical;min-height:90px;line-height:1.6}
+.field textarea{resize:vertical;min-height:85px;line-height:1.6}
 
-/* DETAIL SECTIONS */
-.detail-block{
-  background:var(--parchment);border-radius:8px;
-  padding:1rem;margin-bottom:1rem;
-}
-.detail-block .label{font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
-.detail-block .value{font-size:0.9rem;color:var(--ink-2);line-height:1.6}
-.detail-block .value.big{font-size:0.95rem;color:var(--ink)}
+/* STATUS SELECTOR */
+.status-selector{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px}
+.status-opt{padding:0.65rem 0.25rem;border:1.5px solid var(--border);border-radius:8px;text-align:center;cursor:pointer;font-size:0.75rem;font-family:'DM Sans',sans-serif;color:var(--ink-2);transition:all 0.12s;line-height:1.3}
+.status-opt:hover{border-color:var(--gold);background:var(--gold-light)}
+.status-opt .s-icon{font-size:1.2rem;display:block;margin-bottom:3px}
+.sel-pending{background:#f0efe8;border-color:#a0a098;color:#4a4840;font-weight:500}
+.sel-diterima{background:var(--sky-light);border-color:var(--sky);color:var(--sky);font-weight:500}
+.sel-diskusi{background:var(--amber-light);border-color:var(--amber);color:var(--amber);font-weight:500}
+.sel-proses{background:var(--rust-light);border-color:var(--rust);color:var(--rust);font-weight:500}
+.sel-selesai{background:var(--moss-light);border-color:var(--moss);color:var(--moss);font-weight:500}
 
-/* INTERNAL NOTE */
-.internal-note{
-  background:#fffbf0;border:1px dashed #d4a840;
-  border-radius:8px;padding:0.875rem 1rem;margin-bottom:1rem;
-  font-size:0.82rem;color:#7a5a1a;line-height:1.5;
-}
-.internal-note strong{display:block;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;opacity:0.7}
+/* DISPOSISI SECTION */
+.disposisi-section{background:#fffdf0;border:1px dashed #c8a830;border-radius:10px;padding:1rem 1.1rem;margin-bottom:1.25rem}
+.disposisi-title{font-size:0.72rem;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:#8a6820;margin-bottom:10px}
+.bagian-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+.bagian-btn{padding:0.5rem 0.75rem;border:1.5px solid #d8c080;border-radius:7px;background:white;font-family:'DM Sans',sans-serif;font-size:0.78rem;color:#7a6020;cursor:pointer;transition:all 0.12s;text-align:left}
+.bagian-btn:hover{background:#fffbea;border-color:#b8a040}
+.bagian-btn.sel{background:#fef8d8;border-color:#c8a030;color:#5a4010;font-weight:500}
 
-/* LOADING / EMPTY */
-.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:3rem;color:var(--ink-3);font-size:0.9rem}
+/* PROGRESS BAR */
+.progress-track{display:flex;align-items:flex-start;margin-bottom:1.5rem;position:relative}
+.progress-track::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--border);z-index:0}
+.prog-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;z-index:1}
+.prog-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:0.8rem;transition:all 0.2s}
+.prog-step.done .prog-dot{background:var(--moss);border-color:var(--moss);color:white}
+.prog-step.cur .prog-dot{background:var(--gold);border-color:var(--gold);color:white;box-shadow:0 0 0 4px var(--gold-light)}
+.prog-label{font-size:0.65rem;color:var(--ink-3);text-align:center;line-height:1.3}
+.prog-step.done .prog-label{color:var(--moss)}
+.prog-step.cur .prog-label{color:var(--gold);font-weight:500}
+
+/* DETAIL BLOCKS */
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.detail-block{background:var(--parchment);border-radius:8px;padding:0.875rem 1rem}
+.d-label{font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.d-value{font-size:0.88rem;color:var(--ink);line-height:1.5}
+.isi-block{background:var(--parchment);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:0.9rem;color:var(--ink-2);line-height:1.7}
+.resp-block{background:var(--sky-light);border-left:3px solid var(--sky);border-radius:0 8px 8px 0;padding:0.875rem 1rem;margin-bottom:1rem}
+.int-block{background:#fffbea;border:1px dashed #c8a830;border-radius:8px;padding:0.875rem 1rem;margin-bottom:1rem;font-size:0.85rem;color:#7a6020;line-height:1.6}
+
+/* PDF */
+.pdf-preview{background:white;border:1px solid var(--border);border-radius:10px;padding:1.5rem;max-height:500px;overflow-y:auto;font-size:0.82rem;color:var(--ink-2);line-height:1.7}
+.pdf-preview h3{font-size:0.75rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin:1rem 0 0.5rem;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.pdf-preview table{width:100%;border-collapse:collapse;margin-top:0.5rem;font-size:0.78rem}
+.pdf-preview th{background:var(--parchment);padding:5px 8px;text-align:left;font-weight:500;border:1px solid var(--border);font-size:0.72rem}
+.pdf-preview td{padding:5px 8px;border:1px solid var(--border);vertical-align:top}
+
+/* MISC */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:3rem;color:var(--ink-3);font-size:0.88rem}
 .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty-row td{text-align:center;padding:3rem;color:var(--ink-3)}
-
-/* TOAST */
-.toast{
-  position:fixed;bottom:1.5rem;right:1.5rem;
-  background:var(--ink);color:var(--parchment);
-  padding:0.75rem 1.25rem;border-radius:10px;
-  font-size:0.85rem;z-index:500;
-  transform:translateY(100px);opacity:0;
-  transition:all 0.3s;pointer-events:none;
-}
+.empty-row td{text-align:center;padding:3rem;color:var(--ink-3);font-size:0.88rem}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:var(--parchment);padding:0.75rem 1.25rem;border-radius:10px;font-size:0.85rem;z-index:500;transform:translateY(100px);opacity:0;transition:all 0.3s;pointer-events:none}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{background:var(--moss)}
 .toast.error{background:var(--rust)}
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:1rem;flex-wrap:wrap}
 
-/* CHART SECTION */
-.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:2rem}
-.chart-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.25rem}
-.chart-card h4{font-size:0.8rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:1rem}
-.bar-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.bar-label{font-size:0.8rem;color:var(--ink-2);width:140px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar-track{flex:1;background:var(--cream);border-radius:100px;height:8px;overflow:hidden}
-.bar-fill{height:100%;border-radius:100px;background:var(--gold);transition:width 0.6s ease}
-.bar-num{font-size:0.78rem;color:var(--ink-3);min-width:24px;text-align:right}
-
-@media(max-width:900px){
-  .stat-row{grid-template-columns:repeat(3,1fr)}
-  .chart-row{grid-template-columns:1fr}
-}
+@media(max-width:1100px){.stat-row{grid-template-columns:repeat(3,1fr)}.chart-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">Lytala</div>
     <div class="login-sub">Admin Dashboard</div>
     <input type="text" id="login-user" placeholder="Username" autocomplete="off">
     <input type="password" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Masuk</button>
+    <button class="login-btn" onclick="doLogin()">Masuk ke Dashboard</button>
     <div class="login-err" id="login-err">Username atau password salah.</div>
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <aside>
     <div class="sidebar-logo">
@@ -317,87 +223,87 @@ td{padding:0.875rem 1rem;vertical-align:middle}
       <p>Admin Panel</p>
     </div>
     <nav class="side-nav">
-      <div class="nav-item active" onclick="showSection('dashboard', this)">
+      <div class="nav-group">Utama</div>
+      <div class="nav-item active" id="nav-dashboard" onclick="showSection('dashboard',this)">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
         Dashboard
       </div>
-      <div class="nav-item" onclick="showSection('aspirasi', this)">
+      <div class="nav-item" id="nav-aspirasi" onclick="showSection('aspirasi',this)">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h8v2H2v-2zm0 4h6v1H2v-1z"/></svg>
         Semua Aspirasi
+        <span class="nav-badge" id="badge-all">0</span>
       </div>
-      <div class="nav-item" onclick="showSection('urgent', this)">
+      <div class="nav-group">Filter Cepat</div>
+      <div class="nav-item" id="nav-pending" onclick="showSection('pending',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.75 4a.75.75 0 011.5 0v3.25l2 1.15a.75.75 0 01-.75 1.3l-2.5-1.44A.75.75 0 017.25 8.5V5z"/></svg>
+        Pending
+        <span class="nav-badge nb-amber" id="badge-pending">0</span>
+      </div>
+      <div class="nav-item" id="nav-urgent" onclick="showSection('urgent',this)">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 13H1L8 1zm0 3L3 13h10L8 4zm-1 3h2v3H7V7zm0 4h2v2H7v-2z"/></svg>
-        Urgent
+        Urgent 🚨
+        <span class="nav-badge" id="badge-urgent">0</span>
       </div>
-      <div class="nav-item" onclick="showSection('selesai', this)">
+      <div class="nav-item" id="nav-selesai" onclick="showSection('selesai',this)">
         <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.7 3.3a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-3-3a1 1 0 011.4-1.4L6 9.58l6.3-6.28a1 1 0 011.4 0z"/></svg>
         Selesai
+      </div>
+      <div class="nav-group">Laporan</div>
+      <div class="nav-item" id="nav-laporan" onclick="showSection('laporan',this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h7l3 3v11H3V1zm6.5 0v3h3M5 7h6M5 9.5h6M5 12h4"/></svg>
+        Export Laporan PDF
       </div>
     </nav>
     <div class="sidebar-footer">
       <button class="logout-btn" onclick="doLogout()">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2h4v12h-4v-1h3V3h-3V2zM7.3 4.7l3 3-3 3-1.4-1.4L7.58 8H2V6h5.58L5.9 4.3l1.4-1.4-.0 .8z"/></svg>
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M6 2H3v12h3v1H2V1h4V2zm5.3 2.7l3 3-3 3-1.4-1.4L11.58 8H5V6h6.58L9.9 4.3l1.4-1.4z"/></svg>
         Keluar
       </button>
     </div>
   </aside>
 
   <main>
+
     <!-- DASHBOARD -->
     <div id="section-dashboard">
       <div class="topbar">
         <h2>Dashboard</h2>
         <div class="topbar-right">
-          <button class="refresh-btn" onclick="loadAll()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>
-            Refresh
+          <button class="btn" onclick="loadAll()">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>Refresh
+          </button>
+          <button class="btn pdf" onclick="showSection('laporan',document.getElementById('nav-laporan'))">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h7l3 3v11H3V1zm6.5 0v3h3M5 7h6M5 9.5h6M5 12h4"/></svg>Export PDF
           </button>
         </div>
       </div>
-
-      <div class="stat-row" id="stat-row">
+      <div class="stat-row">
         <div class="stat-card" style="--card-accent:var(--gold)"><div class="num" id="s-total">—</div><div class="lbl">Total Aspirasi</div></div>
-        <div class="stat-card" style="--card-accent:var(--sky)"><div class="num" id="s-pending">—</div><div class="lbl">Pending</div></div>
-        <div class="stat-card" style="--card-accent:var(--amber)"><div class="num" id="s-proses">—</div><div class="lbl">Diproses</div></div>
-        <div class="stat-card" style="--card-accent:var(--rust)"><div class="num" id="s-urgent">—</div><div class="lbl">Urgent 🚨</div></div>
-        <div class="stat-card" style="--card-accent:var(--moss)"><div class="num" id="s-selesai">—</div><div class="lbl">Selesai</div></div>
+        <div class="stat-card" style="--card-accent:var(--amber)" onclick="showSection('pending',document.getElementById('nav-pending'))"><div class="num" id="s-pending">—</div><div class="lbl">Menunggu Tindakan</div></div>
+        <div class="stat-card" style="--card-accent:var(--sky)"><div class="num" id="s-proses">—</div><div class="lbl">Sedang Diproses</div></div>
+        <div class="stat-card" style="--card-accent:var(--rust)" onclick="showSection('urgent',document.getElementById('nav-urgent'))"><div class="num" id="s-urgent">—</div><div class="lbl">Urgent 🚨</div></div>
+        <div class="stat-card" style="--card-accent:var(--moss)" onclick="showSection('selesai',document.getElementById('nav-selesai'))"><div class="num" id="s-selesai">—</div><div class="lbl">Selesai ✓</div></div>
       </div>
-
       <div class="chart-row">
-        <div class="chart-card">
-          <h4>Aspirasi per Kategori</h4>
-          <div id="chart-kategori"></div>
-        </div>
-        <div class="chart-card">
-          <h4>Mood / Urgensi</h4>
-          <div id="chart-mood"></div>
-        </div>
+        <div class="chart-card"><h4>Aspirasi per Kategori</h4><div id="chart-kategori"></div></div>
+        <div class="chart-card"><h4>Distribusi Mood / Urgensi</h4><div id="chart-mood"></div></div>
       </div>
-
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Status</th><th>Tanggal</th><th>Aksi</th>
-          </tr></thead>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Status</th><th>Dikerjakan</th><th>Upvotes</th><th>Tanggal</th><th>Aksi</th></tr></thead>
           <tbody id="tbody-dashboard"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- ASPIRASI -->
+    <!-- SEMUA ASPIRASI -->
     <div id="section-aspirasi" style="display:none">
       <div class="topbar">
         <h2>Semua Aspirasi</h2>
-        <div class="topbar-right">
-          <button class="refresh-btn" onclick="loadAll()">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>
-            Refresh
-          </button>
-        </div>
+        <button class="btn" onclick="loadAll()"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>Refresh</button>
       </div>
-
       <div class="filter-bar">
-        <input type="text" id="search-input" placeholder="🔍  Cari tiket, nama, isi..." oninput="applyFilters()">
+        <input type="text" id="search-input" placeholder="🔍 Cari tiket, nama, isi..." oninput="applyFilters()">
         <select id="filter-status" onchange="applyFilters()">
           <option value="">Semua Status</option>
           <option>Pending</option><option>Diterima</option><option>Diskusi</option><option>Proses</option><option>Selesai</option>
@@ -412,16 +318,24 @@ td{padding:0.875rem 1rem;vertical-align:middle}
           <option>Apresiasi</option><option>Saran</option><option>Kecewa</option><option>Urgent</option>
         </select>
       </div>
-
       <div class="table-wrap">
         <table>
-          <thead><tr>
-            <th>Tiket</th><th>Nama</th><th>Email</th><th>Kategori</th><th>Mood</th><th>Isi (ringkas)</th><th>Status</th><th>Upvotes</th><th>Tanggal</th><th>Aksi</th>
-          </tr></thead>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Isi (ringkas)</th><th>Status</th><th>Dikerjakan</th><th>♥</th><th>Tanggal</th><th>Aksi</th></tr></thead>
           <tbody id="tbody-all"></tbody>
         </table>
       </div>
-      <div id="pagination" style="display:flex;gap:8px;justify-content:center;margin-top:1rem"></div>
+      <div class="pagination" id="pagination-all"></div>
+    </div>
+
+    <!-- PENDING -->
+    <div id="section-pending" style="display:none">
+      <div class="topbar"><h2>Aspirasi Pending ⏳</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Isi</th><th>♥</th><th>Tanggal</th><th>Aksi Cepat</th></tr></thead>
+          <tbody id="tbody-pending"></tbody>
+        </table>
+      </div>
     </div>
 
     <!-- URGENT -->
@@ -429,7 +343,7 @@ td{padding:0.875rem 1rem;vertical-align:middle}
       <div class="topbar"><h2>Aspirasi Urgent 🚨</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Isi</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Isi</th><th>Status</th><th>Dikerjakan</th><th>Tanggal</th><th>Aksi</th></tr></thead>
           <tbody id="tbody-urgent"></tbody>
         </table>
       </div>
@@ -440,19 +354,60 @@ td{padding:0.875rem 1rem;vertical-align:middle}
       <div class="topbar"><h2>Aspirasi Selesai ✓</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Upvotes</th><th>Tanggal Selesai</th><th>Aksi</th></tr></thead>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Dikerjakan</th><th>♥</th><th>Tanggal</th><th>Aksi</th></tr></thead>
           <tbody id="tbody-selesai"></tbody>
         </table>
       </div>
     </div>
+
+    <!-- LAPORAN -->
+    <div id="section-laporan" style="display:none">
+      <div class="topbar"><h2>Export Laporan PDF</h2></div>
+      <div style="background:white;border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:1.25rem">
+          <div class="field" style="margin:0"><label>Kategori</label>
+            <select id="lap-kategori" onchange="updatePreview()">
+              <option value="">Semua Kategori</option>
+              <option>Sarana Prasarana</option><option>Pelayanan Administrasi</option>
+              <option>Kebijakan Kampus</option><option>Keamanan Lingkungan</option><option>Ruang Curhat</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0"><label>Status</label>
+            <select id="lap-status" onchange="updatePreview()">
+              <option value="">Semua Status</option>
+              <option>Pending</option><option>Diterima</option><option>Diskusi</option><option>Proses</option><option>Selesai</option>
+            </select>
+          </div>
+          <div class="field" style="margin:0"><label>Mood</label>
+            <select id="lap-mood" onchange="updatePreview()">
+              <option value="">Semua Mood</option>
+              <option>Apresiasi</option><option>Saran</option><option>Kecewa</option><option>Urgent</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="btn pdf" onclick="exportPDF()">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 1h7l3 3v11H3V1zm6.5 0v3h3M5 7h6M5 9.5h6M5 12h4"/></svg>
+            Download PDF
+          </button>
+          <button class="btn" onclick="updatePreview()">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1 8a7 7 0 1114 0A7 7 0 011 8zm7-3v3.5l2.5 1.5-.75 1.25L7 9.5V5h1z"/></svg>
+            Pratinjau
+          </button>
+          <span style="font-size:0.82rem;color:var(--ink-3)" id="lap-count"></span>
+        </div>
+      </div>
+      <div id="pdf-preview-area"></div>
+    </div>
+
   </main>
 </div>
 
-<!-- MODAL DETAIL / EDIT -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
     <div class="modal-header">
-      <h3 id="modal-title">Detail Aspirasi</h3>
+      <div><h3 id="modal-title">Detail</h3><div class="ticket-ref" id="modal-sub"></div></div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
@@ -460,372 +415,497 @@ td{padding:0.875rem 1rem;vertical-align:middle}
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== CONFIG — SAMAKAN DENGAN index.html =====
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbxP4tEziEEDJBX4d8FFGYxLGkECZxU2fr4D7B0FhxUwg53Qg45z-orggoA5QFI96NTs/exec';
+const ADMIN_CREDS = [{user:'admin',pass:'lytala2026'},{user:'superadmin',pass:'admin123'}];
+const STATUS_LIST = ['Pending','Diterima','Diskusi','Proses','Selesai'];
+const STATUS_ICON = {Pending:'⏳',Diterima:'✅',Diskusi:'💬',Proses:'⚙️',Selesai:'🎉'};
+const MOOD_EMOJI = {Apresiasi:'🌟',Saran:'💡',Kecewa:'😔',Urgent:'🚨'};
+const BAR_COLORS = ['var(--gold)','var(--sky)','var(--moss)','var(--rust)','var(--purple)'];
+const BAGIAN_LIST = ['Sarana & Prasarana','Akademik & Kurikulum','Kemahasiswaan','Administrasi Umum','Keuangan','IT & Infrastruktur','Keamanan','Pimpinan Langsung'];
 
-// Kredensial admin — ganti sesuai keinginan
-// PENTING: untuk keamanan lebih, pindahkan validasi ini ke GAS
-const ADMIN_CREDS = [
-  { user: 'admin', pass: 'lytala2026' },
-  { user: 'superadmin', pass: 'admin123' }
-];
+let allData = [], filtered = [], currentPage = 1;
+const PER_PAGE = 20;
+let curEditId = '', curStatus = '', curBagian = '';
 
-// ===== STATE =====
-let allData = [];
-let filtered = [];
-let currentPage = 1;
-const PER_PAGE = 15;
-const moodEmoji = { Apresiasi:'🌟', Saran:'💡', Kecewa:'😔', Urgent:'🚨' };
-const statusOrder = ['Pending','Diterima','Diskusi','Proses','Selesai'];
-
-// ===== LOGIN =====
+// LOGIN
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
-  const ok = ADMIN_CREDS.some(c => c.user === u && c.pass === p);
-  if (ok) {
-    sessionStorage.setItem('lytala_admin', '1');
-    document.getElementById('login-screen').style.display = 'none';
+  if (ADMIN_CREDS.some(c=>c.user===u&&c.pass===p)) {
+    sessionStorage.setItem('lytala_admin','1');
+    document.getElementById('login-screen').style.display='none';
     document.getElementById('app').classList.add('show');
     loadAll();
-  } else {
-    document.getElementById('login-err').style.display = 'block';
-  }
+  } else { document.getElementById('login-err').style.display='block'; }
 }
-function doLogout() {
-  sessionStorage.removeItem('lytala_admin');
-  location.reload();
-}
-if (sessionStorage.getItem('lytala_admin')) {
-  document.getElementById('login-screen').style.display = 'none';
+function doLogout(){ sessionStorage.removeItem('lytala_admin'); location.reload(); }
+if(sessionStorage.getItem('lytala_admin')){
+  document.getElementById('login-screen').style.display='none';
   document.getElementById('app').classList.add('show');
   loadAll();
 }
 
-// ===== SECTION NAV =====
+// SECTION NAV
 function showSection(id, el) {
-  ['dashboard','aspirasi','urgent','selesai'].forEach(s =>
-    document.getElementById('section-'+s).style.display = 'none'
-  );
-  document.getElementById('section-'+id).style.display = 'block';
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
+  ['dashboard','aspirasi','pending','urgent','selesai','laporan'].forEach(s=>{
+    const e=document.getElementById('section-'+s); if(e) e.style.display='none';
+  });
+  document.getElementById('section-'+id).style.display='block';
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(id==='laporan') updatePreview();
 }
 
-// ===== LOAD DATA =====
+// LOAD
 async function loadAll() {
-  showLoading();
+  ['tbody-dashboard','tbody-all','tbody-pending','tbody-urgent','tbody-selesai'].forEach(id=>{
+    const e=document.getElementById(id);
+    if(e) e.innerHTML=`<tr><td colspan="10"><div class="loading"><div class="spinner"></div> Memuat...</div></td></tr>`;
+  });
   try {
-    const res = await fetch(GAS_URL + '?action=adminGetAll');
+    const res = await fetch(GAS_URL+'?action=adminGetAll');
     const data = await res.json();
-    allData = data.aspirasi || [];
+    allData = data.aspirasi||[];
     renderAll();
-  } catch (e) {
-    showToast('Gagal memuat data. Periksa koneksi.', 'error');
-  }
+    showToast('Data dimuat: '+allData.length+' aspirasi','success');
+  } catch(e){ showToast('Gagal memuat data','error'); }
 }
 
-function showLoading() {
-  ['tbody-dashboard','tbody-all','tbody-urgent','tbody-selesai'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = `<tr><td colspan="10"><div class="loading"><div class="spinner"></div> Memuat...</div></td></tr>`;
-  });
+function renderAll(){
+  renderStats(); renderCharts(); renderDashboard();
+  applyFilters(); renderPending(); renderUrgent(); renderSelesai(); updateBadges();
 }
 
-function renderAll() {
-  renderStats();
-  renderCharts();
-  renderDashboardTable();
-  applyFilters();
-  renderUrgent();
-  renderSelesai();
+// STATS
+function renderStats(){
+  document.getElementById('s-total').textContent = allData.length;
+  document.getElementById('s-pending').textContent = allData.filter(a=>a.status==='Pending').length;
+  document.getElementById('s-proses').textContent = allData.filter(a=>['Diterima','Diskusi','Proses'].includes(a.status)).length;
+  document.getElementById('s-urgent').textContent = allData.filter(a=>a.mood==='Urgent'&&a.status!=='Selesai').length;
+  document.getElementById('s-selesai').textContent = allData.filter(a=>a.status==='Selesai').length;
+}
+function updateBadges(){
+  document.getElementById('badge-all').textContent = allData.length;
+  document.getElementById('badge-pending').textContent = allData.filter(a=>a.status==='Pending').length;
+  document.getElementById('badge-urgent').textContent = allData.filter(a=>a.mood==='Urgent'&&a.status!=='Selesai').length;
 }
 
-// ===== STATS =====
-function renderStats() {
-  const total = allData.length;
-  const pending = allData.filter(a => a.status === 'Pending').length;
-  const proses = allData.filter(a => ['Diterima','Diskusi','Proses'].includes(a.status)).length;
-  const urgent = allData.filter(a => a.mood === 'Urgent' && a.status !== 'Selesai').length;
-  const selesai = allData.filter(a => a.status === 'Selesai').length;
-  document.getElementById('s-total').textContent = total;
-  document.getElementById('s-pending').textContent = pending;
-  document.getElementById('s-proses').textContent = proses;
-  document.getElementById('s-urgent').textContent = urgent;
-  document.getElementById('s-selesai').textContent = selesai;
+// CHARTS
+function renderCharts(){
+  const kc={},mc={};
+  allData.forEach(a=>{ kc[a.kategori]=(kc[a.kategori]||0)+1; mc[a.mood]=(mc[a.mood]||0)+1; });
+  renderBar('chart-kategori',kc,0); renderBar('chart-mood',mc,1);
 }
-
-// ===== CHARTS =====
-function renderCharts() {
-  const katCount = {};
-  const moodCount = {};
-  allData.forEach(a => {
-    katCount[a.kategori] = (katCount[a.kategori] || 0) + 1;
-    moodCount[a.mood] = (moodCount[a.mood] || 0) + 1;
-  });
-  renderBarChart('chart-kategori', katCount);
-  renderBarChart('chart-mood', moodCount);
-}
-
-function renderBarChart(id, data) {
-  const el = document.getElementById(id);
-  const sorted = Object.entries(data).sort((a,b) => b[1]-a[1]);
-  const max = sorted[0]?.[1] || 1;
-  el.innerHTML = sorted.map(([k,v]) => `
+function renderBar(id,data,ci){
+  const el=document.getElementById(id);
+  const s=Object.entries(data).sort((a,b)=>b[1]-a[1]);
+  const mx=s[0]?.[1]||1;
+  el.innerHTML=s.length?s.map(([k,v],i)=>`
     <div class="bar-item">
-      <div class="bar-label" title="${k}">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
+      <div class="bar-label" title="${k}">${MOOD_EMOJI[k]||''} ${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/mx*100)}%;background:${BAR_COLORS[(ci+i)%BAR_COLORS.length]}"></div></div>
       <div class="bar-num">${v}</div>
-    </div>`).join('') || '<div style="color:var(--ink-3);font-size:0.85rem">Belum ada data</div>';
+    </div>`).join('')
+    :'<div style="color:var(--ink-3);font-size:0.82rem;padding:0.5rem">Belum ada data</div>';
 }
 
-// ===== TABLES =====
-function renderDashboardTable() {
-  const recent = [...allData].slice(0, 10);
-  document.getElementById('tbody-dashboard').innerHTML = recent.length
-    ? recent.map(a => rowHtml(a, ['status-badge','tanggal','aksi'])).join('')
-    : emptyRow(7);
+// TABLES
+function renderDashboard(){
+  document.getElementById('tbody-dashboard').innerHTML = allData.slice(0,10).length
+    ? allData.slice(0,10).map(a=>`<tr>
+        <td class="td-ticket">${a.ticketId}</td>
+        <td class="td-nama">${esc(a.nama)}</td>
+        <td><span class="badge badge-cat">${a.kategori}</span></td>
+        <td>${MOOD_EMOJI[a.mood]||'💬'}</td>
+        <td>${sb(a.status)}</td>
+        <td style="font-size:0.75rem;color:var(--sky)">${a.bagian||'—'}</td>
+        <td style="text-align:center">${a.upvotes||0}</td>
+        <td class="td-date">${a.tanggal}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn" style="padding:3px 9px;font-size:0.72rem" onclick='openDetail(${js(a)})'>Detail</button>
+          <button class="btn primary" style="padding:3px 9px;font-size:0.72rem" onclick='openEdit(${js(a)})'>Update</button>
+        </div></td></tr>`).join('')
+    : '<tr class="empty-row"><td colspan="9">🌿 Belum ada data</td></tr>';
 }
 
-function applyFilters() {
-  const search = document.getElementById('search-input').value.toLowerCase();
-  const status = document.getElementById('filter-status').value;
-  const kategori = document.getElementById('filter-kategori').value;
-  const mood = document.getElementById('filter-mood').value;
-
-  filtered = allData.filter(a => {
-    const matchSearch = !search ||
-      a.ticketId.toLowerCase().includes(search) ||
-      a.nama.toLowerCase().includes(search) ||
-      a.isi.toLowerCase().includes(search) ||
-      a.email.toLowerCase().includes(search);
-    const matchStatus = !status || a.status === status;
-    const matchKat = !kategori || a.kategori === kategori;
-    const matchMood = !mood || a.mood === mood;
-    return matchSearch && matchStatus && matchKat && matchMood;
-  });
-  currentPage = 1;
-  renderPaged();
+function applyFilters(){
+  const q=document.getElementById('search-input').value.toLowerCase();
+  const st=document.getElementById('filter-status').value;
+  const kat=document.getElementById('filter-kategori').value;
+  const mood=document.getElementById('filter-mood').value;
+  filtered=allData.filter(a=>
+    (!q||a.ticketId.toLowerCase().includes(q)||a.nama.toLowerCase().includes(q)||a.isi.toLowerCase().includes(q)||(a.email||'').toLowerCase().includes(q))
+    &&(!st||a.status===st)&&(!kat||a.kategori===kat)&&(!mood||a.mood===mood)
+  );
+  currentPage=1; renderPaged();
 }
 
-function renderPaged() {
-  const start = (currentPage - 1) * PER_PAGE;
-  const page = filtered.slice(start, start + PER_PAGE);
+function renderPaged(){
+  const s=(currentPage-1)*PER_PAGE, page=filtered.slice(s,s+PER_PAGE);
   document.getElementById('tbody-all').innerHTML = page.length
-    ? page.map(a => rowHtmlFull(a)).join('')
-    : emptyRow(10);
-  renderPagination();
+    ? page.map(a=>`<tr>
+        <td class="td-ticket">${a.ticketId}</td>
+        <td class="td-nama">${esc(a.nama)}</td>
+        <td><span class="badge badge-cat" style="font-size:0.68rem">${a.kategori}</span></td>
+        <td>${MOOD_EMOJI[a.mood]||'💬'}</td>
+        <td class="td-isi">${esc(a.isi)}</td>
+        <td>${sb(a.status)}</td>
+        <td style="font-size:0.75rem;color:var(--sky)">${a.bagian||'—'}</td>
+        <td style="text-align:center;font-size:0.8rem">${a.upvotes||0}</td>
+        <td class="td-date">${a.tanggal}</td>
+        <td><div style="display:flex;gap:3px">
+          <button class="btn" style="padding:3px 8px;font-size:0.7rem" onclick='openDetail(${js(a)})'>Detail</button>
+          <button class="btn primary" style="padding:3px 8px;font-size:0.7rem" onclick='openEdit(${js(a)})'>Update</button>
+        </div></td></tr>`).join('')
+    : '<tr class="empty-row"><td colspan="10">🌿 Tidak ada data sesuai filter</td></tr>';
+  const tp=Math.ceil(filtered.length/PER_PAGE);
+  document.getElementById('pagination-all').innerHTML = tp>1
+    ? Array.from({length:tp},(_,i)=>`<button class="btn ${i+1===currentPage?'primary':''}" style="padding:4px 10px;font-size:0.78rem" onclick="goPage(${i+1})">${i+1}</button>`).join(''):'';
+}
+function goPage(n){currentPage=n;renderPaged();}
+
+function renderPending(){
+  const data=allData.filter(a=>a.status==='Pending');
+  document.getElementById('tbody-pending').innerHTML = data.length
+    ? data.map(a=>`<tr>
+        <td class="td-ticket">${a.ticketId}</td>
+        <td class="td-nama">${esc(a.nama)}</td>
+        <td><span class="badge badge-cat">${a.kategori}</span></td>
+        <td>${MOOD_EMOJI[a.mood]||'💬'}</td>
+        <td class="td-isi">${esc(a.isi)}</td>
+        <td style="text-align:center">${a.upvotes||0}</td>
+        <td class="td-date">${a.tanggal}</td>
+        <td><div style="display:flex;gap:4px">
+          <button class="btn success" style="padding:4px 10px;font-size:0.75rem" onclick="quickStatus('${a.ticketId}','Diterima')">✅ Terima</button>
+          <button class="btn primary" style="padding:4px 10px;font-size:0.75rem" onclick='openEdit(${js(a)})'>Update</button>
+        </div></td></tr>`).join('')
+    : '<tr class="empty-row"><td colspan="8">🎉 Tidak ada aspirasi pending!</td></tr>';
 }
 
-function renderPagination() {
-  const total = Math.ceil(filtered.length / PER_PAGE);
-  const el = document.getElementById('pagination');
-  if (total <= 1) { el.innerHTML = ''; return; }
-  let html = '';
-  for (let i = 1; i <= total; i++) {
-    html += `<button class="btn-sm ${i===currentPage?'primary':''}" onclick="goPage(${i})">${i}</button>`;
-  }
-  el.innerHTML = html;
-}
-
-function goPage(n) { currentPage = n; renderPaged(); }
-
-function renderUrgent() {
-  const data = allData.filter(a => a.mood === 'Urgent' && a.status !== 'Selesai');
+function renderUrgent(){
+  const data=allData.filter(a=>a.mood==='Urgent'&&a.status!=='Selesai');
   document.getElementById('tbody-urgent').innerHTML = data.length
-    ? data.map(a => `<tr>
+    ? data.map(a=>`<tr style="background:${a.status==='Pending'?'#fff8f8':''}">
         <td class="td-ticket">${a.ticketId}</td>
-        <td class="td-nama">${a.nama}</td>
+        <td class="td-nama">${esc(a.nama)}</td>
         <td><span class="badge badge-cat">${a.kategori}</span></td>
-        <td class="td-isi" style="max-width:240px">${a.isi}</td>
-        <td>${statusBadge(a.status)}</td>
+        <td class="td-isi">${esc(a.isi)}</td>
+        <td>${sb(a.status)}</td>
+        <td style="font-size:0.75rem;color:var(--sky)">${a.bagian||'—'}</td>
         <td class="td-date">${a.tanggal}</td>
-        <td><div class="action-btns">
-          <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
-          <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
-        </div></td>
-      </tr>`).join('')
-    : emptyRow(7, '🎉 Tidak ada aspirasi urgent saat ini');
+        <td><div style="display:flex;gap:4px">
+          <button class="btn" style="padding:3px 8px;font-size:0.72rem" onclick='openDetail(${js(a)})'>Detail</button>
+          <button class="btn primary" style="padding:3px 8px;font-size:0.72rem" onclick='openEdit(${js(a)})'>Update</button>
+        </div></td></tr>`).join('')
+    : '<tr class="empty-row"><td colspan="8">🎉 Tidak ada aspirasi urgent!</td></tr>';
 }
 
-function renderSelesai() {
-  const data = allData.filter(a => a.status === 'Selesai');
+function renderSelesai(){
+  const data=allData.filter(a=>a.status==='Selesai');
   document.getElementById('tbody-selesai').innerHTML = data.length
-    ? data.map(a => `<tr>
+    ? data.map(a=>`<tr>
         <td class="td-ticket">${a.ticketId}</td>
-        <td class="td-nama">${a.nama}</td>
+        <td class="td-nama">${esc(a.nama)}</td>
         <td><span class="badge badge-cat">${a.kategori}</span></td>
-        <td style="text-align:center">${a.upvotes || 0} ♥</td>
+        <td style="font-size:0.75rem;color:var(--sky)">${a.bagian||'—'}</td>
+        <td style="text-align:center">${a.upvotes||0}</td>
         <td class="td-date">${a.tanggal}</td>
-        <td><button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Lihat</button></td>
+        <td><button class="btn" style="padding:3px 8px;font-size:0.72rem" onclick='openDetail(${js(a)})'>Lihat</button></td>
       </tr>`).join('')
-    : emptyRow(6, 'Belum ada aspirasi yang selesai');
+    : '<tr class="empty-row"><td colspan="7">Belum ada aspirasi selesai</td></tr>';
 }
 
-// ===== ROW HELPERS =====
-function rowHtml(a) {
-  return `<tr>
-    <td class="td-ticket">${a.ticketId}</td>
-    <td class="td-nama">${a.nama}</td>
-    <td><span class="badge badge-cat">${a.kategori}</span></td>
-    <td><span class="mood-icon" title="${a.mood}">${moodEmoji[a.mood]||'💬'}</span></td>
-    <td>${statusBadge(a.status)}</td>
-    <td class="td-date">${a.tanggal}</td>
-    <td><div class="action-btns">
-      <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
-      <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
-    </div></td>
-  </tr>`;
+// QUICK STATUS
+async function quickStatus(ticketId, newStatus){
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify({action:'adminUpdate',ticketId,status:newStatus,tanggapan:'',catatanPublik:'',disposisi:'',bagian:''})});
+    const d=await res.json();
+    if(d.success){ const i=allData.findIndex(a=>a.ticketId===ticketId); if(i>-1) allData[i].status=newStatus; renderAll(); showToast(ticketId+' → '+newStatus+' ✓','success'); }
+  }catch(e){showToast('Gagal update','error');}
 }
 
-function rowHtmlFull(a) {
-  return `<tr>
-    <td class="td-ticket">${a.ticketId}</td>
-    <td class="td-nama">${escHtml(a.nama)}</td>
-    <td class="td-date">${a.email||'-'}</td>
-    <td><span class="badge badge-cat">${a.kategori}</span></td>
-    <td><span class="mood-icon" title="${a.mood}">${moodEmoji[a.mood]||'💬'}</span></td>
-    <td class="td-isi">${escHtml(a.isi)}</td>
-    <td>${statusBadge(a.status)}</td>
-    <td style="text-align:center">${a.upvotes||0}</td>
-    <td class="td-date">${a.tanggal}</td>
-    <td><div class="action-btns">
-      <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
-      <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
-    </div></td>
-  </tr>`;
-}
-
-function emptyRow(cols, msg='Tidak ada data') {
-  return `<tr class="empty-row"><td colspan="${cols}">🌿 ${msg}</td></tr>`;
-}
-
-function statusBadge(s) {
-  const cls = { Pending:'pending', Diterima:'diterima', Diskusi:'diskusi', Proses:'proses', Selesai:'selesai' };
-  return `<span class="badge badge-${cls[s]||'pending'}">${s}</span>`;
-}
-
-function escHtml(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ===== MODAL DETAIL =====
-function openDetail(a) {
-  document.getElementById('modal-title').textContent = a.ticketId + ' — Detail';
-  document.getElementById('modal-body').innerHTML = `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-      <div class="detail-block"><div class="label">Pengirim</div><div class="value big">${escHtml(a.nama)}</div></div>
-      <div class="detail-block"><div class="label">Email</div><div class="value">${escHtml(a.email)||'-'}</div></div>
-      <div class="detail-block"><div class="label">Kategori</div><div class="value">${a.kategori}</div></div>
-      <div class="detail-block"><div class="label">Mood</div><div class="value">${moodEmoji[a.mood]||''} ${a.mood}</div></div>
+// DETAIL MODAL
+function openDetail(a){
+  document.getElementById('modal-title').textContent='Detail Aspirasi';
+  document.getElementById('modal-sub').textContent=a.ticketId+' · '+a.tanggal;
+  const oi=STATUS_LIST.indexOf(a.status);
+  const prog=STATUS_LIST.map((s,i)=>{
+    const cls=i<oi?'done':i===oi?'cur':'';
+    return `<div class="prog-step ${cls}"><div class="prog-dot">${cls==='done'?'✓':STATUS_ICON[s]}</div><div class="prog-label">${s}</div></div>`;
+  }).join('');
+  document.getElementById('modal-body').innerHTML=`
+    <div class="progress-track">${prog}</div>
+    <div class="detail-grid">
+      <div class="detail-block"><div class="d-label">Pengirim</div><div class="d-value" style="font-weight:500">${esc(a.nama)}</div></div>
+      <div class="detail-block"><div class="d-label">Email</div><div class="d-value">${esc(a.email)||'—'}</div></div>
+      <div class="detail-block"><div class="d-label">Kategori</div><div class="d-value">${a.kategori}</div></div>
+      <div class="detail-block"><div class="d-label">Mood</div><div class="d-value">${MOOD_EMOJI[a.mood]||''} ${a.mood}</div></div>
+      ${a.bagian?`<div class="detail-block" style="grid-column:span 2"><div class="d-label">Ditugaskan ke</div><div class="d-value" style="color:var(--sky);font-weight:500">📋 ${a.bagian}</div></div>`:''}
     </div>
-    <div class="detail-block" style="margin-bottom:1rem">
-      <div class="label">Isi Aspirasi</div>
-      <div class="value big" style="line-height:1.7">${escHtml(a.isi)}</div>
-    </div>
-    ${a.fileUrl ? `<div class="detail-block" style="margin-bottom:1rem"><div class="label">Lampiran</div><div class="value"><a href="${a.fileUrl}" target="_blank" style="color:var(--sky)">Lihat File ↗</a></div></div>` : ''}
-    ${a.disposisi ? `<div class="internal-note"><strong>🔒 Disposisi Internal</strong>${escHtml(a.disposisi)}</div>` : ''}
-    ${a.tanggapan ? `<div class="detail-block" style="border-left:3px solid var(--sky);border-radius:0 8px 8px 0"><div class="label">Tanggapan Resmi</div><div class="value">${escHtml(a.tanggapan)}</div></div>` : ''}
-    <div style="display:flex;gap:10px;margin-top:1rem">
-      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
-        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">STATUS</div>
-        <div style="margin-top:4px">${statusBadge(a.status)}</div>
-      </div>
-      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
-        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">UPVOTES</div>
-        <div style="font-weight:500;margin-top:4px">${a.upvotes||0} ♥</div>
-      </div>
-      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
-        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">TANGGAL</div>
-        <div style="font-size:0.82rem;margin-top:4px">${a.tanggal}</div>
-      </div>
+    <div class="isi-block"><div class="d-label" style="margin-bottom:6px">Isi Aspirasi</div>${esc(a.isi)}</div>
+    ${a.fileUrl?`<div class="detail-block" style="margin-bottom:1rem"><div class="d-label">Lampiran</div><div class="d-value"><a href="${a.fileUrl}" target="_blank" style="color:var(--sky)">Lihat File ↗</a></div></div>`:''}
+    ${a.tanggapan?`<div class="resp-block"><div class="d-label" style="color:var(--sky);margin-bottom:4px">Tanggapan Resmi</div><div style="font-size:0.88rem;color:var(--sky)">${esc(a.tanggapan)}</div></div>`:''}
+    ${a.disposisi?`<div class="int-block"><div class="d-label" style="margin-bottom:4px">🔒 Disposisi Internal</div>${esc(a.disposisi)}</div>`:''}
+    ${a.catatanPublik?`<div class="detail-block"><div class="d-label">Catatan Publik</div><div class="d-value">${esc(a.catatanPublik)}</div></div>`:''}
+    <div style="display:flex;gap:8px;margin-top:1rem">
+      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px"><div class="d-label">UPVOTES</div><div style="font-weight:500;margin-top:4px">${a.upvotes||0} ♥</div></div>
+      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px"><div class="d-label">IDENTITAS</div><div style="font-size:0.82rem;margin-top:4px">${a.identitas==='anonim'?'🎭 Anonim':'👤 Publik'}</div></div>
     </div>`;
-  document.getElementById('modal-footer').innerHTML = `
-    <button class="btn-sm" onclick="closeModal()">Tutup</button>
-    <button class="btn-sm primary" onclick='closeModal();openEdit(${JSON.stringify(a)})'>Update Status</button>`;
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="btn" onclick="closeModal()">Tutup</button>
+    <button class="btn primary" onclick='closeModal();openEdit(${js(a)})'>✏️ Update Status</button>`;
   document.getElementById('modal-overlay').classList.add('show');
 }
 
-// ===== MODAL EDIT =====
-function openEdit(a) {
-  document.getElementById('modal-title').textContent = 'Update — ' + a.ticketId;
-  document.getElementById('modal-body').innerHTML = `
-    <div style="background:var(--parchment);border-radius:8px;padding:0.875rem 1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--ink-2);line-height:1.6">
-      <strong style="display:block;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px">${a.kategori} · ${moodEmoji[a.mood]||''} ${a.mood}</strong>
-      ${escHtml(a.isi).substring(0,180)}${a.isi.length>180?'...':''}
-    </div>
-    <div class="field">
-      <label>Status</label>
-      <select id="edit-status">
-        ${statusOrder.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${s}</option>`).join('')}
-      </select>
-    </div>
-    <div class="field">
-      <label>Tanggapan Resmi <span style="font-weight:300;text-transform:none;letter-spacing:0">(tampil ke mahasiswa)</span></label>
-      <textarea id="edit-tanggapan" placeholder="Tulis respons resmi institusi...">${escHtml(a.tanggapan||'')}</textarea>
-    </div>
-    <div class="field">
-      <label>Catatan Publik <span style="font-weight:300;text-transform:none;letter-spacing:0">(update progress singkat)</span></label>
-      <textarea id="edit-catatan" placeholder="Contoh: Perbaikan dijadwalkan minggu depan..." style="min-height:70px">${escHtml(a.catatanPublik||'')}</textarea>
-    </div>
-    <div class="field">
-      <label>🔒 Disposisi Internal <span style="font-weight:300;text-transform:none;letter-spacing:0">(tidak tampil ke publik)</span></label>
-      <textarea id="edit-disposisi" placeholder="Catatan internal tim..." style="min-height:70px">${escHtml(a.disposisi||'')}</textarea>
+// EDIT MODAL
+function openEdit(a){
+  curEditId=a.ticketId; curStatus=a.status; curBagian=a.bagian||'';
+  document.getElementById('modal-title').textContent='Update Aspirasi';
+  document.getElementById('modal-sub').textContent=a.ticketId+' · '+a.kategori+' · '+(MOOD_EMOJI[a.mood]||'')+' '+a.mood;
+
+  const statusHtml=STATUS_LIST.map(s=>{
+    const key=s.toLowerCase();
+    const isc=s===a.status;
+    return `<div class="status-opt${isc?' sel-'+key:''}" id="sopt-${key}" onclick="selStatus('${s}')">
+      <span class="s-icon">${STATUS_ICON[s]}</span>${s}
     </div>`;
-  document.getElementById('modal-footer').innerHTML = `
-    <button class="btn-sm" onclick="closeModal()">Batal</button>
-    <button class="btn-sm primary" onclick="saveUpdate('${a.ticketId}')">Simpan Perubahan</button>`;
+  }).join('');
+
+  const bagianHtml=BAGIAN_LIST.map(b=>`
+    <button type="button" class="bagian-btn${b===curBagian?' sel':''}" onclick="selBagian('${b}',this)">${b}</button>`
+  ).join('');
+
+  document.getElementById('modal-body').innerHTML=`
+    <div class="field">
+      <label>Status — klik untuk mengubah</label>
+      <div class="status-selector">${statusHtml}</div>
+    </div>
+    <div class="disposisi-section">
+      <div class="disposisi-title">📋 Disposisi — Bagian yang Mengerjakan</div>
+      <div class="bagian-grid">${bagianHtml}</div>
+      <div class="field" style="margin:0">
+        <label>Catatan Disposisi Internal <span class="hint">(tidak tampil ke mahasiswa)</span></label>
+        <textarea id="edit-disposisi" placeholder="Contoh: Sudah koordinasi ke Sarpras, tunggu jadwal survey...">${esc(a.disposisi||'')}</textarea>
+      </div>
+    </div>
+    <div class="field">
+      <label>Tanggapan Resmi <span class="hint">(tampil ke mahasiswa)</span></label>
+      <textarea id="edit-tanggapan" placeholder="Tulis respons resmi institusi...">${esc(a.tanggapan||'')}</textarea>
+    </div>
+    <div class="field">
+      <label>Catatan Publik <span class="hint">(progress singkat, tampil ke mahasiswa)</span></label>
+      <textarea id="edit-catatan" placeholder="Contoh: Perbaikan dijadwalkan minggu depan." style="min-height:65px">${esc(a.catatanPublik||'')}</textarea>
+    </div>
+    <div style="background:var(--parchment);border-radius:8px;padding:0.875rem;font-size:0.85rem;color:var(--ink-2);line-height:1.6">
+      <div class="d-label" style="margin-bottom:4px">Isi Aspirasi (referensi)</div>${esc(a.isi)}
+    </div>`;
+
+  document.getElementById('modal-footer').innerHTML=`
+    <button class="btn" onclick="closeModal()">Batal</button>
+    <button class="btn primary" id="save-btn" onclick="saveUpdate()">💾 Simpan Perubahan</button>`;
   document.getElementById('modal-overlay').classList.add('show');
 }
 
-// ===== SAVE UPDATE =====
-async function saveUpdate(ticketId) {
-  const btn = document.querySelector('#modal-footer .primary');
-  btn.disabled = true;
-  btn.textContent = 'Menyimpan...';
+function selStatus(s){
+  curStatus=s;
+  STATUS_LIST.forEach(st=>{
+    const el=document.getElementById('sopt-'+st.toLowerCase());
+    if(el){ el.className='status-opt'+(st===s?' sel-'+st.toLowerCase():''); }
+  });
+}
 
-  const payload = {
-    action: 'adminUpdate',
-    ticketId,
-    status: document.getElementById('edit-status').value,
-    tanggapan: document.getElementById('edit-tanggapan').value,
-    catatanPublik: document.getElementById('edit-catatan').value,
-    disposisi: document.getElementById('edit-disposisi').value,
+function selBagian(b,btn){
+  curBagian=b;
+  document.querySelectorAll('.bagian-btn').forEach(el=>el.classList.remove('sel'));
+  btn.classList.add('sel');
+}
+
+// SAVE
+async function saveUpdate(){
+  const btn=document.getElementById('save-btn');
+  btn.disabled=true; btn.textContent='⏳ Menyimpan...';
+  const payload={
+    action:'adminUpdate', ticketId:curEditId, status:curStatus,
+    tanggapan:document.getElementById('edit-tanggapan').value,
+    catatanPublik:document.getElementById('edit-catatan').value,
+    disposisi:document.getElementById('edit-disposisi').value,
+    bagian:curBagian
   };
-
-  try {
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(payload) });
-    const data = await res.json();
-    if (data.success) {
-      closeModal();
-      showToast('Aspirasi berhasil diupdate ✓', 'success');
-      await loadAll();
-    } else {
-      showToast('Gagal: ' + (data.error||'Coba lagi'), 'error');
-      btn.disabled = false;
-      btn.textContent = 'Simpan Perubahan';
-    }
-  } catch(e) {
-    showToast('Error koneksi', 'error');
-    btn.disabled = false;
-    btn.textContent = 'Simpan Perubahan';
-  }
+  try{
+    const res=await fetch(GAS_URL,{method:'POST',body:JSON.stringify(payload)});
+    const d=await res.json();
+    if(d.success){
+      const i=allData.findIndex(a=>a.ticketId===curEditId);
+      if(i>-1) allData[i]={...allData[i],...payload};
+      closeModal(); renderAll();
+      showToast(curEditId+' berhasil diupdate → '+curStatus+' ✓','success');
+    } else { showToast('Gagal: '+(d.error||'Coba lagi'),'error'); btn.disabled=false; btn.textContent='💾 Simpan Perubahan'; }
+  }catch(e){ showToast('Error koneksi','error'); btn.disabled=false; btn.textContent='💾 Simpan Perubahan'; }
 }
 
-// ===== MODAL =====
-function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+// LAPORAN
+function getLaporanData(){
+  const kat=document.getElementById('lap-kategori').value;
+  const st=document.getElementById('lap-status').value;
+  const mood=document.getElementById('lap-mood').value;
+  return allData.filter(a=>(!kat||a.kategori===kat)&&(!st||a.status===st)&&(!mood||a.mood===mood));
+}
 
-// ===== TOAST =====
-function showToast(msg, type='') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(() => t.className = 'toast', 3000);
+function updatePreview(){
+  const data=getLaporanData();
+  document.getElementById('lap-count').textContent=data.length+' aspirasi';
+  const kc={},sc={},mc={},bc={};
+  data.forEach(a=>{
+    kc[a.kategori]=(kc[a.kategori]||0)+1;
+    sc[a.status]=(sc[a.status]||0)+1;
+    mc[a.mood]=(mc[a.mood]||0)+1;
+    if(a.bagian) bc[a.bagian]=(bc[a.bagian]||0)+1;
+  });
+  const now=new Date();
+  const tgl=now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const katR=Object.entries(kc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td style="text-align:center">${v}</td><td style="text-align:center">${data.length?Math.round(v/data.length*100):0}%</td></tr>`).join('');
+  const stR=Object.entries(sc).map(([k,v])=>`<tr><td>${STATUS_ICON[k]||''} ${k}</td><td style="text-align:center">${v}</td></tr>`).join('');
+  const mR=Object.entries(mc).map(([k,v])=>`<tr><td>${MOOD_EMOJI[k]||''} ${k}</td><td style="text-align:center">${v}</td></tr>`).join('');
+  const bR=Object.entries(bc).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<tr><td>${k}</td><td style="text-align:center">${v}</td></tr>`).join('');
+  const listR=data.slice(0,25).map(a=>`<tr><td>${a.ticketId}</td><td>${esc(a.nama)}</td><td>${a.kategori}</td><td>${MOOD_EMOJI[a.mood]||''}</td><td>${sb(a.status)}</td><td>${a.bagian||'—'}</td><td>${a.tanggal}</td></tr>`).join('');
+
+  document.getElementById('pdf-preview-area').innerHTML=`
+    <div class="pdf-preview">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.5rem">
+        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--ink)">📋 Laporan Aspirasi — Lytala</div>
+        <div style="font-size:0.75rem;color:var(--ink-3)">Dicetak: ${tgl}</div>
+      </div>
+      <div style="display:flex;gap:12px;margin-bottom:1rem">
+        ${[['Total',data.length],['Selesai',data.filter(a=>a.status==='Selesai').length],['Urgent',data.filter(a=>a.mood==='Urgent').length],['Pending',data.filter(a=>a.status==='Pending').length]]
+          .map(([l,v])=>`<div style="background:var(--parchment);border-radius:8px;padding:0.75rem 1rem;text-align:center;flex:1"><div style="font-size:1.3rem;font-weight:bold;color:var(--ink)">${v}</div><div style="font-size:0.7rem;color:var(--ink-3)">${l}</div></div>`).join('')}
+      </div>
+      <h3>Ringkasan per Kategori</h3>
+      <table><thead><tr><th>Kategori</th><th>Jumlah</th><th>%</th></tr></thead><tbody>${katR||'<tr><td colspan="3" style="text-align:center">—</td></tr>'}</tbody></table>
+      <h3>Status Aspirasi</h3>
+      <table><thead><tr><th>Status</th><th>Jumlah</th></tr></thead><tbody>${stR}</tbody></table>
+      <h3>Mood / Urgensi</h3>
+      <table><thead><tr><th>Mood</th><th>Jumlah</th></tr></thead><tbody>${mR}</tbody></table>
+      ${bR?`<h3>Bagian Pengerjaan</h3><table><thead><tr><th>Bagian</th><th>Jumlah</th></tr></thead><tbody>${bR}</tbody></table>`:''}
+      <h3>Daftar Aspirasi (maks. 25)</h3>
+      <table><thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Status</th><th>Dikerjakan</th><th>Tanggal</th></tr></thead><tbody>${listR||'<tr><td colspan="7" style="text-align:center">Tidak ada data</td></tr>'}</tbody></table>
+    </div>`;
+}
+
+function exportPDF(){
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  const data=getLaporanData();
+  const W=210,M=15;
+  let y=M;
+
+  // Header strip
+  doc.setFillColor(26,23,20); doc.rect(0,0,W,28,'F');
+  doc.setTextColor(232,217,176); doc.setFontSize(18); doc.setFont('helvetica','bold');
+  doc.text('LYTALA',M,12);
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
+  doc.text('Sistem Aspirasi Civitas Akademika',M,18);
+  const tgl=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  doc.setTextColor(232,217,176); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text('LAPORAN ASPIRASI',W-M,12,{align:'right'});
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
+  doc.text('Dicetak: '+tgl,W-M,19,{align:'right'});
+  y=36;
+
+  // Summary boxes
+  const boxes=[['Total',data.length],['Selesai',data.filter(a=>a.status==='Selesai').length],['Urgent',data.filter(a=>a.mood==='Urgent').length],['Pending',data.filter(a=>a.status==='Pending').length]];
+  const bw=(W-M*2-9)/4;
+  boxes.forEach(([l,v],i)=>{
+    const x=M+i*(bw+3);
+    doc.setFillColor(248,244,238); doc.roundedRect(x,y,bw,16,2,2,'F');
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+    doc.text(String(v),x+bw/2,y+8,{align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
+    doc.text(l,x+bw/2,y+13,{align:'center'});
+  });
+  y+=22;
+
+  // Kategori table
+  const kc={};
+  data.forEach(a=>kc[a.kategori]=(kc[a.kategori]||0)+1);
+  const kRows=Object.entries(kc).sort((a,b)=>b[1]-a[1]);
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+  doc.text('ASPIRASI PER KATEGORI',M,y); y+=5;
+  doc.setFillColor(237,232,224); doc.rect(M,y,W-M*2,6,'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
+  doc.text('Kategori',M+2,y+4); doc.text('Jumlah',W-M-18,y+4,{align:'right'}); doc.text('%',W-M-2,y+4,{align:'right'});
+  y+=6;
+  kRows.forEach(([k,v],i)=>{
+    if(i%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,6,'F');}
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(74,69,63);
+    doc.text(k,M+2,y+4); doc.text(String(v),W-M-18,y+4,{align:'right'});
+    doc.text((data.length?Math.round(v/data.length*100):0)+'%',W-M-2,y+4,{align:'right'});
+    y+=6;
+  });
+  y+=6;
+
+  // Bagian table
+  const bc={};
+  data.forEach(a=>{if(a.bagian) bc[a.bagian]=(bc[a.bagian]||0)+1;});
+  if(Object.keys(bc).length){
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+    doc.text('BAGIAN PENGERJAAN',M,y); y+=5;
+    doc.setFillColor(237,232,224); doc.rect(M,y,W-M*2,6,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
+    doc.text('Bagian',M+2,y+4); doc.text('Jumlah Ditugaskan',W-M-2,y+4,{align:'right'});
+    y+=6;
+    Object.entries(bc).sort((a,b)=>b[1]-a[1]).forEach(([k,v],i)=>{
+      if(i%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,6,'F');}
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(74,69,63);
+      doc.text(k,M+2,y+4); doc.text(String(v),W-M-2,y+4,{align:'right'});
+      y+=6;
+    });
+    y+=6;
+  }
+
+  // Data table
+  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+  doc.text('DAFTAR ASPIRASI',M,y); y+=5;
+  const cols=['Tiket','Nama','Kategori','Mood','Status','Dikerjakan','Tanggal'];
+  const cw=[28,30,32,15,20,30,20];
+  doc.setFillColor(26,23,20); doc.rect(M,y,W-M*2,7,'F');
+  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(232,217,176);
+  let cx=M+2; cols.forEach((c,i)=>{doc.text(c,cx,y+4.5);cx+=cw[i];}); y+=7;
+
+  doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+  data.forEach((a,idx)=>{
+    if(y>270){doc.addPage();y=20;}
+    if(idx%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,7,'F');}
+    doc.setFontSize(6.5);
+    cx=M+2;
+    [a.ticketId,(a.nama||'').substring(0,12),(a.kategori||'').substring(0,14),(a.mood||'').substring(0,10),a.status||'',(a.bagian||'—').substring(0,13),a.tanggal||'']
+      .forEach((v,i)=>{doc.text(v,cx,y+4.5);cx+=cw[i];});
+    y+=7;
+  });
+
+  // Footer
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFontSize(7); doc.setTextColor(138,128,118);
+    doc.text('Lytala — "Aspirasimu telah menemukan muaranya." | Hal. '+i+'/'+pages,W/2,290,{align:'center'});
+  }
+  doc.save('Laporan-Lytala-'+new Date().toISOString().slice(0,10)+'.pdf');
+  showToast('PDF berhasil diunduh ✓','success');
+}
+
+// HELPERS
+function sb(s){const c={Pending:'pending',Diterima:'diterima',Diskusi:'diskusi',Proses:'proses',Selesai:'selesai'};return `<span class="badge badge-${c[s]||'pending'}">${STATUS_ICON[s]||''} ${s}</span>`;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function js(a){return JSON.stringify(a).replace(/'/g,"&#39;");}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('show');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',3500);
 }
 </script>
 </body>
