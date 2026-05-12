@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lytala Admin — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1714;
+  --ink-2: #4a453f;
+  --ink-3: #8a8076;
+  --parchment: #f8f4ee;
+  --cream: #ede8e0;
+  --gold: #b8913a;
+  --gold-light: #f5ead0;
+  --moss: #3d5a3e;
+  --moss-light: #daeada;
+  --rust: #8b3a2a;
+  --rust-light: #f5dbd8;
+  --sky: #2a4a6b;
+  --sky-light: #daeaf5;
+  --amber: #c87820;
+  --amber-light: #faebd0;
+  --purple: #5a3a7a;
+  --purple-light: #ead8f5;
+  --border: rgba(26,23,20,0.1);
+  --sidebar-w: 220px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--parchment);color:var(--ink);min-height:100vh;display:flex}
+
+/* LOGIN */
+#login-screen{
+  position:fixed;inset:0;
+  background:var(--ink);
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;
+}
+.login-box{
+  background:var(--parchment);
+  border-radius:16px;
+  padding:2.5rem;
+  width:360px;
+  text-align:center;
+}
+.login-logo{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--ink);margin-bottom:4px}
+.login-sub{font-size:0.78rem;color:var(--ink-3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2rem}
+.login-box input{
+  width:100%;padding:0.875rem 1rem;
+  border:1px solid var(--border);border-radius:10px;
+  background:white;font-family:'DM Sans',sans-serif;
+  font-size:0.95rem;color:var(--ink);outline:none;
+  margin-bottom:10px;
+  transition:border-color 0.2s;
+}
+.login-box input:focus{border-color:var(--gold)}
+.login-btn{
+  width:100%;padding:0.875rem;
+  background:var(--ink);color:var(--parchment);
+  border:none;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:500;
+  cursor:pointer;transition:background 0.2s;
+}
+.login-btn:hover{background:var(--ink-2)}
+.login-err{font-size:0.82rem;color:var(--rust);margin-top:8px;display:none}
+
+/* LAYOUT */
+#app{display:none;width:100%;min-height:100vh;flex-direction:row}
+#app.show{display:flex}
+
+/* SIDEBAR */
+aside{
+  width:var(--sidebar-w);min-width:var(--sidebar-w);
+  background:var(--ink);
+  display:flex;flex-direction:column;
+  position:fixed;left:0;top:0;bottom:0;
+  z-index:50;
+}
+.sidebar-logo{
+  padding:1.5rem 1.25rem 1.25rem;
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+.sidebar-logo h1{font-family:'Playfair Display',serif;font-size:1.3rem;color:#e8d9b0;font-weight:600}
+.sidebar-logo p{font-size:0.68rem;color:#6a6460;letter-spacing:0.1em;text-transform:uppercase;margin-top:2px}
+nav.side-nav{flex:1;padding:1rem 0}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:0.7rem 1.25rem;
+  color:#8a8076;font-size:0.875rem;
+  cursor:pointer;transition:all 0.15s;
+  border-left:2px solid transparent;
+  user-select:none;
+}
+.nav-item:hover{color:#e8d9b0;background:rgba(255,255,255,0.04)}
+.nav-item.active{color:#e8d9b0;border-left-color:var(--gold);background:rgba(255,255,255,0.06)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:0.7}
+.nav-item.active svg{opacity:1}
+.sidebar-footer{
+  padding:1rem 1.25rem;
+  border-top:1px solid rgba(255,255,255,0.08);
+  font-size:0.75rem;color:#4a453f;
+}
+.logout-btn{
+  display:flex;align-items:center;gap:8px;
+  color:#6a6460;cursor:pointer;font-size:0.8rem;
+  padding:0.5rem 0;transition:color 0.15s;
+  background:none;border:none;font-family:inherit;
+}
+.logout-btn:hover{color:#e8d9b0}
+
+/* MAIN */
+main{
+  margin-left:var(--sidebar-w);
+  flex:1;padding:2rem;
+  min-height:100vh;
+}
+
+/* TOP BAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:2rem;
+}
+.topbar h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ink)}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.refresh-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:0.5rem 1rem;border:1px solid var(--border);
+  border-radius:8px;background:white;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:0.82rem;color:var(--ink-2);
+  transition:all 0.15s;
+}
+.refresh-btn:hover{border-color:var(--gold)}
+
+/* STAT CARDS */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:2rem}
+.stat-card{
+  background:white;border:1px solid var(--border);
+  border-radius:12px;padding:1rem 1.25rem;
+  border-top:3px solid var(--card-accent,var(--gold));
+}
+.stat-card .num{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--ink)}
+.stat-card .lbl{font-size:0.72rem;color:var(--ink-3);letter-spacing:0.05em;margin-top:2px}
+
+/* FILTERS */
+.filter-bar{
+  display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+  margin-bottom:1.25rem;
+}
+.filter-bar select, .filter-bar input{
+  font-family:'DM Sans',sans-serif;font-size:0.85rem;
+  padding:0.5rem 0.875rem;border:1px solid var(--border);
+  border-radius:8px;background:white;color:var(--ink);outline:none;
+  transition:border-color 0.2s;
+}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--gold)}
+.filter-bar input{min-width:220px}
+.pill{
+  padding:5px 14px;border:1px solid var(--border);border-radius:100px;
+  font-size:0.78rem;cursor:pointer;background:white;color:var(--ink-2);
+  transition:all 0.15s;white-space:nowrap;
+}
+.pill:hover,.pill.active{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
+
+/* TABLE */
+.table-wrap{background:white;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:0.85rem}
+thead tr{background:var(--parchment);border-bottom:1px solid var(--border)}
+thead th{
+  padding:0.75rem 1rem;text-align:left;
+  font-size:0.7rem;font-weight:500;
+  letter-spacing:0.07em;text-transform:uppercase;
+  color:var(--ink-3);white-space:nowrap;
+}
+tbody tr{border-bottom:1px solid var(--border);transition:background 0.1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--parchment)}
+td{padding:0.875rem 1rem;vertical-align:middle}
+.td-ticket{font-size:0.75rem;color:var(--ink-3);font-weight:500;letter-spacing:0.04em;white-space:nowrap}
+.td-nama{font-weight:500;font-size:0.88rem}
+.td-isi{color:var(--ink-2);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-date{font-size:0.78rem;color:var(--ink-3);white-space:nowrap}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:0.72rem;font-weight:500;white-space:nowrap}
+.badge-pending{background:#f0f0ea;color:#8a8076}
+.badge-diterima{background:var(--sky-light);color:var(--sky)}
+.badge-diskusi{background:var(--amber-light);color:var(--amber)}
+.badge-proses{background:var(--rust-light);color:var(--rust)}
+.badge-selesai{background:var(--moss-light);color:var(--moss)}
+.badge-cat{background:var(--cream);color:var(--ink-2);font-size:0.7rem}
+.mood-icon{font-size:1rem}
+
+/* ACTION BUTTONS */
+.action-btns{display:flex;gap:6px}
+.btn-sm{
+  padding:5px 12px;border-radius:6px;font-size:0.78rem;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  border:1px solid var(--border);background:white;color:var(--ink-2);
+  transition:all 0.15s;white-space:nowrap;
+}
+.btn-sm:hover{background:var(--parchment)}
+.btn-sm.primary{background:var(--ink);color:var(--parchment);border-color:var(--ink)}
+.btn-sm.primary:hover{background:var(--ink-2)}
+.btn-sm.danger{border-color:var(--rust);color:var(--rust)}
+.btn-sm.danger:hover{background:var(--rust-light)}
+
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(26,23,20,0.5);z-index:200;
+  align-items:flex-start;justify-content:center;
+  padding:2rem;overflow-y:auto;
+}
+.modal-overlay.show{display:flex}
+.modal{
+  background:white;border-radius:16px;
+  width:100%;max-width:680px;
+  margin:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);
+}
+.modal-header h3{font-family:'Playfair Display',serif;font-size:1.1rem}
+.modal-close{background:none;border:none;cursor:pointer;font-size:1.3rem;color:var(--ink-3);line-height:1}
+.modal-body{padding:1.5rem}
+.modal-footer{
+  display:flex;gap:8px;justify-content:flex-end;
+  padding:1rem 1.5rem;border-top:1px solid var(--border);
+}
+
+/* FORM FIELDS */
+.field{margin-bottom:1.25rem}
+.field label{display:block;font-size:0.75rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:6px}
+.field select,.field textarea,.field input{
+  width:100%;font-family:'DM Sans',sans-serif;font-size:0.9rem;
+  color:var(--ink);background:var(--parchment);
+  border:1px solid var(--border);border-radius:8px;
+  padding:0.7rem 0.875rem;outline:none;transition:border-color 0.2s;
+}
+.field select:focus,.field textarea:focus,.field input:focus{border-color:var(--gold);background:white}
+.field textarea{resize:vertical;min-height:90px;line-height:1.6}
+
+/* DETAIL SECTIONS */
+.detail-block{
+  background:var(--parchment);border-radius:8px;
+  padding:1rem;margin-bottom:1rem;
+}
+.detail-block .label{font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.detail-block .value{font-size:0.9rem;color:var(--ink-2);line-height:1.6}
+.detail-block .value.big{font-size:0.95rem;color:var(--ink)}
+
+/* INTERNAL NOTE */
+.internal-note{
+  background:#fffbf0;border:1px dashed #d4a840;
+  border-radius:8px;padding:0.875rem 1rem;margin-bottom:1rem;
+  font-size:0.82rem;color:#7a5a1a;line-height:1.5;
+}
+.internal-note strong{display:block;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;opacity:0.7}
+
+/* LOADING / EMPTY */
+.loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:3rem;color:var(--ink-3);font-size:0.9rem}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-row td{text-align:center;padding:3rem;color:var(--ink-3)}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.5rem;right:1.5rem;
+  background:var(--ink);color:var(--parchment);
+  padding:0.75rem 1.25rem;border-radius:10px;
+  font-size:0.85rem;z-index:500;
+  transform:translateY(100px);opacity:0;
+  transition:all 0.3s;pointer-events:none;
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{background:var(--moss)}
+.toast.error{background:var(--rust)}
+
+/* CHART SECTION */
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:2rem}
+.chart-card{background:white;border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.chart-card h4{font-size:0.8rem;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:1rem}
+.bar-item{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:0.8rem;color:var(--ink-2);width:140px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;background:var(--cream);border-radius:100px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:100px;background:var(--gold);transition:width 0.6s ease}
+.bar-num{font-size:0.78rem;color:var(--ink-3);min-width:24px;text-align:right}
+
+@media(max-width:900px){
+  .stat-row{grid-template-columns:repeat(3,1fr)}
+  .chart-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Lytala</div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="text" id="login-user" placeholder="Username" autocomplete="off">
+    <input type="password" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Masuk</button>
+    <div class="login-err" id="login-err">Username atau password salah.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <aside>
+    <div class="sidebar-logo">
+      <h1>Lytala</h1>
+      <p>Admin Panel</p>
+    </div>
+    <nav class="side-nav">
+      <div class="nav-item active" onclick="showSection('dashboard', this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/></svg>
+        Dashboard
+      </div>
+      <div class="nav-item" onclick="showSection('aspirasi', this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h8v2H2v-2zm0 4h6v1H2v-1z"/></svg>
+        Semua Aspirasi
+      </div>
+      <div class="nav-item" onclick="showSection('urgent', this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l7 13H1L8 1zm0 3L3 13h10L8 4zm-1 3h2v3H7V7zm0 4h2v2H7v-2z"/></svg>
+        Urgent
+      </div>
+      <div class="nav-item" onclick="showSection('selesai', this)">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.7 3.3a1 1 0 010 1.4l-7 7a1 1 0 01-1.4 0l-3-3a1 1 0 011.4-1.4L6 9.58l6.3-6.28a1 1 0 011.4 0z"/></svg>
+        Selesai
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10 2h4v12h-4v-1h3V3h-3V2zM7.3 4.7l3 3-3 3-1.4-1.4L7.58 8H2V6h5.58L5.9 4.3l1.4-1.4-.0 .8z"/></svg>
+        Keluar
+      </button>
+    </div>
+  </aside>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div id="section-dashboard">
+      <div class="topbar">
+        <h2>Dashboard</h2>
+        <div class="topbar-right">
+          <button class="refresh-btn" onclick="loadAll()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="stat-row" id="stat-row">
+        <div class="stat-card" style="--card-accent:var(--gold)"><div class="num" id="s-total">—</div><div class="lbl">Total Aspirasi</div></div>
+        <div class="stat-card" style="--card-accent:var(--sky)"><div class="num" id="s-pending">—</div><div class="lbl">Pending</div></div>
+        <div class="stat-card" style="--card-accent:var(--amber)"><div class="num" id="s-proses">—</div><div class="lbl">Diproses</div></div>
+        <div class="stat-card" style="--card-accent:var(--rust)"><div class="num" id="s-urgent">—</div><div class="lbl">Urgent 🚨</div></div>
+        <div class="stat-card" style="--card-accent:var(--moss)"><div class="num" id="s-selesai">—</div><div class="lbl">Selesai</div></div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card">
+          <h4>Aspirasi per Kategori</h4>
+          <div id="chart-kategori"></div>
+        </div>
+        <div class="chart-card">
+          <h4>Mood / Urgensi</h4>
+          <div id="chart-mood"></div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Tiket</th><th>Nama</th><th>Kategori</th><th>Mood</th><th>Status</th><th>Tanggal</th><th>Aksi</th>
+          </tr></thead>
+          <tbody id="tbody-dashboard"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ASPIRASI -->
+    <div id="section-aspirasi" style="display:none">
+      <div class="topbar">
+        <h2>Semua Aspirasi</h2>
+        <div class="topbar-right">
+          <button class="refresh-btn" onclick="loadAll()">
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M13.6 2.4A7 7 0 112 9.5V8H0v4l1.5-1.5A9 9 0 1015 8h-2a7 7 0 01-1.4 4.6V2.4z"/></svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="search-input" placeholder="🔍  Cari tiket, nama, isi..." oninput="applyFilters()">
+        <select id="filter-status" onchange="applyFilters()">
+          <option value="">Semua Status</option>
+          <option>Pending</option><option>Diterima</option><option>Diskusi</option><option>Proses</option><option>Selesai</option>
+        </select>
+        <select id="filter-kategori" onchange="applyFilters()">
+          <option value="">Semua Kategori</option>
+          <option>Sarana Prasarana</option><option>Pelayanan Administrasi</option>
+          <option>Kebijakan Kampus</option><option>Keamanan Lingkungan</option><option>Ruang Curhat</option>
+        </select>
+        <select id="filter-mood" onchange="applyFilters()">
+          <option value="">Semua Mood</option>
+          <option>Apresiasi</option><option>Saran</option><option>Kecewa</option><option>Urgent</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Tiket</th><th>Nama</th><th>Email</th><th>Kategori</th><th>Mood</th><th>Isi (ringkas)</th><th>Status</th><th>Upvotes</th><th>Tanggal</th><th>Aksi</th>
+          </tr></thead>
+          <tbody id="tbody-all"></tbody>
+        </table>
+      </div>
+      <div id="pagination" style="display:flex;gap:8px;justify-content:center;margin-top:1rem"></div>
+    </div>
+
+    <!-- URGENT -->
+    <div id="section-urgent" style="display:none">
+      <div class="topbar"><h2>Aspirasi Urgent 🚨</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Isi</th><th>Status</th><th>Tanggal</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-urgent"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SELESAI -->
+    <div id="section-selesai" style="display:none">
+      <div class="topbar"><h2>Aspirasi Selesai ✓</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tiket</th><th>Nama</th><th>Kategori</th><th>Upvotes</th><th>Tanggal Selesai</th><th>Aksi</th></tr></thead>
+          <tbody id="tbody-selesai"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL DETAIL / EDIT -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Detail Aspirasi</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== CONFIG — SAMAKAN DENGAN index.html =====
+const GAS_URL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
+
+// Kredensial admin — ganti sesuai keinginan
+// PENTING: untuk keamanan lebih, pindahkan validasi ini ke GAS
+const ADMIN_CREDS = [
+  { user: 'admin', pass: 'lytala2026' },
+  { user: 'superadmin', pass: 'admin123' }
+];
+
+// ===== STATE =====
+let allData = [];
+let filtered = [];
+let currentPage = 1;
+const PER_PAGE = 15;
+const moodEmoji = { Apresiasi:'🌟', Saran:'💡', Kecewa:'😔', Urgent:'🚨' };
+const statusOrder = ['Pending','Diterima','Diskusi','Proses','Selesai'];
+
+// ===== LOGIN =====
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const ok = ADMIN_CREDS.some(c => c.user === u && c.pass === p);
+  if (ok) {
+    sessionStorage.setItem('lytala_admin', '1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('show');
+    loadAll();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+function doLogout() {
+  sessionStorage.removeItem('lytala_admin');
+  location.reload();
+}
+if (sessionStorage.getItem('lytala_admin')) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  loadAll();
+}
+
+// ===== SECTION NAV =====
+function showSection(id, el) {
+  ['dashboard','aspirasi','urgent','selesai'].forEach(s =>
+    document.getElementById('section-'+s).style.display = 'none'
+  );
+  document.getElementById('section-'+id).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ===== LOAD DATA =====
+async function loadAll() {
+  showLoading();
+  try {
+    const res = await fetch(GAS_URL + '?action=adminGetAll');
+    const data = await res.json();
+    allData = data.aspirasi || [];
+    renderAll();
+  } catch (e) {
+    showToast('Gagal memuat data. Periksa koneksi.', 'error');
+  }
+}
+
+function showLoading() {
+  ['tbody-dashboard','tbody-all','tbody-urgent','tbody-selesai'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<tr><td colspan="10"><div class="loading"><div class="spinner"></div> Memuat...</div></td></tr>`;
+  });
+}
+
+function renderAll() {
+  renderStats();
+  renderCharts();
+  renderDashboardTable();
+  applyFilters();
+  renderUrgent();
+  renderSelesai();
+}
+
+// ===== STATS =====
+function renderStats() {
+  const total = allData.length;
+  const pending = allData.filter(a => a.status === 'Pending').length;
+  const proses = allData.filter(a => ['Diterima','Diskusi','Proses'].includes(a.status)).length;
+  const urgent = allData.filter(a => a.mood === 'Urgent' && a.status !== 'Selesai').length;
+  const selesai = allData.filter(a => a.status === 'Selesai').length;
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-pending').textContent = pending;
+  document.getElementById('s-proses').textContent = proses;
+  document.getElementById('s-urgent').textContent = urgent;
+  document.getElementById('s-selesai').textContent = selesai;
+}
+
+// ===== CHARTS =====
+function renderCharts() {
+  const katCount = {};
+  const moodCount = {};
+  allData.forEach(a => {
+    katCount[a.kategori] = (katCount[a.kategori] || 0) + 1;
+    moodCount[a.mood] = (moodCount[a.mood] || 0) + 1;
+  });
+  renderBarChart('chart-kategori', katCount);
+  renderBarChart('chart-mood', moodCount);
+}
+
+function renderBarChart(id, data) {
+  const el = document.getElementById(id);
+  const sorted = Object.entries(data).sort((a,b) => b[1]-a[1]);
+  const max = sorted[0]?.[1] || 1;
+  el.innerHTML = sorted.map(([k,v]) => `
+    <div class="bar-item">
+      <div class="bar-label" title="${k}">${k}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v/max*100)}%"></div></div>
+      <div class="bar-num">${v}</div>
+    </div>`).join('') || '<div style="color:var(--ink-3);font-size:0.85rem">Belum ada data</div>';
+}
+
+// ===== TABLES =====
+function renderDashboardTable() {
+  const recent = [...allData].slice(0, 10);
+  document.getElementById('tbody-dashboard').innerHTML = recent.length
+    ? recent.map(a => rowHtml(a, ['status-badge','tanggal','aksi'])).join('')
+    : emptyRow(7);
+}
+
+function applyFilters() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const status = document.getElementById('filter-status').value;
+  const kategori = document.getElementById('filter-kategori').value;
+  const mood = document.getElementById('filter-mood').value;
+
+  filtered = allData.filter(a => {
+    const matchSearch = !search ||
+      a.ticketId.toLowerCase().includes(search) ||
+      a.nama.toLowerCase().includes(search) ||
+      a.isi.toLowerCase().includes(search) ||
+      a.email.toLowerCase().includes(search);
+    const matchStatus = !status || a.status === status;
+    const matchKat = !kategori || a.kategori === kategori;
+    const matchMood = !mood || a.mood === mood;
+    return matchSearch && matchStatus && matchKat && matchMood;
+  });
+  currentPage = 1;
+  renderPaged();
+}
+
+function renderPaged() {
+  const start = (currentPage - 1) * PER_PAGE;
+  const page = filtered.slice(start, start + PER_PAGE);
+  document.getElementById('tbody-all').innerHTML = page.length
+    ? page.map(a => rowHtmlFull(a)).join('')
+    : emptyRow(10);
+  renderPagination();
+}
+
+function renderPagination() {
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  const el = document.getElementById('pagination');
+  if (total <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  for (let i = 1; i <= total; i++) {
+    html += `<button class="btn-sm ${i===currentPage?'primary':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  el.innerHTML = html;
+}
+
+function goPage(n) { currentPage = n; renderPaged(); }
+
+function renderUrgent() {
+  const data = allData.filter(a => a.mood === 'Urgent' && a.status !== 'Selesai');
+  document.getElementById('tbody-urgent').innerHTML = data.length
+    ? data.map(a => `<tr>
+        <td class="td-ticket">${a.ticketId}</td>
+        <td class="td-nama">${a.nama}</td>
+        <td><span class="badge badge-cat">${a.kategori}</span></td>
+        <td class="td-isi" style="max-width:240px">${a.isi}</td>
+        <td>${statusBadge(a.status)}</td>
+        <td class="td-date">${a.tanggal}</td>
+        <td><div class="action-btns">
+          <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
+          <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
+        </div></td>
+      </tr>`).join('')
+    : emptyRow(7, '🎉 Tidak ada aspirasi urgent saat ini');
+}
+
+function renderSelesai() {
+  const data = allData.filter(a => a.status === 'Selesai');
+  document.getElementById('tbody-selesai').innerHTML = data.length
+    ? data.map(a => `<tr>
+        <td class="td-ticket">${a.ticketId}</td>
+        <td class="td-nama">${a.nama}</td>
+        <td><span class="badge badge-cat">${a.kategori}</span></td>
+        <td style="text-align:center">${a.upvotes || 0} ♥</td>
+        <td class="td-date">${a.tanggal}</td>
+        <td><button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Lihat</button></td>
+      </tr>`).join('')
+    : emptyRow(6, 'Belum ada aspirasi yang selesai');
+}
+
+// ===== ROW HELPERS =====
+function rowHtml(a) {
+  return `<tr>
+    <td class="td-ticket">${a.ticketId}</td>
+    <td class="td-nama">${a.nama}</td>
+    <td><span class="badge badge-cat">${a.kategori}</span></td>
+    <td><span class="mood-icon" title="${a.mood}">${moodEmoji[a.mood]||'💬'}</span></td>
+    <td>${statusBadge(a.status)}</td>
+    <td class="td-date">${a.tanggal}</td>
+    <td><div class="action-btns">
+      <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
+      <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
+    </div></td>
+  </tr>`;
+}
+
+function rowHtmlFull(a) {
+  return `<tr>
+    <td class="td-ticket">${a.ticketId}</td>
+    <td class="td-nama">${escHtml(a.nama)}</td>
+    <td class="td-date">${a.email||'-'}</td>
+    <td><span class="badge badge-cat">${a.kategori}</span></td>
+    <td><span class="mood-icon" title="${a.mood}">${moodEmoji[a.mood]||'💬'}</span></td>
+    <td class="td-isi">${escHtml(a.isi)}</td>
+    <td>${statusBadge(a.status)}</td>
+    <td style="text-align:center">${a.upvotes||0}</td>
+    <td class="td-date">${a.tanggal}</td>
+    <td><div class="action-btns">
+      <button class="btn-sm" onclick='openDetail(${JSON.stringify(a)})'>Detail</button>
+      <button class="btn-sm primary" onclick='openEdit(${JSON.stringify(a)})'>Update</button>
+    </div></td>
+  </tr>`;
+}
+
+function emptyRow(cols, msg='Tidak ada data') {
+  return `<tr class="empty-row"><td colspan="${cols}">🌿 ${msg}</td></tr>`;
+}
+
+function statusBadge(s) {
+  const cls = { Pending:'pending', Diterima:'diterima', Diskusi:'diskusi', Proses:'proses', Selesai:'selesai' };
+  return `<span class="badge badge-${cls[s]||'pending'}">${s}</span>`;
+}
+
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ===== MODAL DETAIL =====
+function openDetail(a) {
+  document.getElementById('modal-title').textContent = a.ticketId + ' — Detail';
+  document.getElementById('modal-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+      <div class="detail-block"><div class="label">Pengirim</div><div class="value big">${escHtml(a.nama)}</div></div>
+      <div class="detail-block"><div class="label">Email</div><div class="value">${escHtml(a.email)||'-'}</div></div>
+      <div class="detail-block"><div class="label">Kategori</div><div class="value">${a.kategori}</div></div>
+      <div class="detail-block"><div class="label">Mood</div><div class="value">${moodEmoji[a.mood]||''} ${a.mood}</div></div>
+    </div>
+    <div class="detail-block" style="margin-bottom:1rem">
+      <div class="label">Isi Aspirasi</div>
+      <div class="value big" style="line-height:1.7">${escHtml(a.isi)}</div>
+    </div>
+    ${a.fileUrl ? `<div class="detail-block" style="margin-bottom:1rem"><div class="label">Lampiran</div><div class="value"><a href="${a.fileUrl}" target="_blank" style="color:var(--sky)">Lihat File ↗</a></div></div>` : ''}
+    ${a.disposisi ? `<div class="internal-note"><strong>🔒 Disposisi Internal</strong>${escHtml(a.disposisi)}</div>` : ''}
+    ${a.tanggapan ? `<div class="detail-block" style="border-left:3px solid var(--sky);border-radius:0 8px 8px 0"><div class="label">Tanggapan Resmi</div><div class="value">${escHtml(a.tanggapan)}</div></div>` : ''}
+    <div style="display:flex;gap:10px;margin-top:1rem">
+      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
+        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">STATUS</div>
+        <div style="margin-top:4px">${statusBadge(a.status)}</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
+        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">UPVOTES</div>
+        <div style="font-weight:500;margin-top:4px">${a.upvotes||0} ♥</div>
+      </div>
+      <div style="flex:1;text-align:center;padding:0.75rem;background:var(--parchment);border-radius:8px">
+        <div style="font-size:0.7rem;color:var(--ink-3);letter-spacing:0.06em">TANGGAL</div>
+        <div style="font-size:0.82rem;margin-top:4px">${a.tanggal}</div>
+      </div>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn-sm" onclick="closeModal()">Tutup</button>
+    <button class="btn-sm primary" onclick='closeModal();openEdit(${JSON.stringify(a)})'>Update Status</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+// ===== MODAL EDIT =====
+function openEdit(a) {
+  document.getElementById('modal-title').textContent = 'Update — ' + a.ticketId;
+  document.getElementById('modal-body').innerHTML = `
+    <div style="background:var(--parchment);border-radius:8px;padding:0.875rem 1rem;margin-bottom:1.25rem;font-size:0.85rem;color:var(--ink-2);line-height:1.6">
+      <strong style="display:block;font-size:0.7rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px">${a.kategori} · ${moodEmoji[a.mood]||''} ${a.mood}</strong>
+      ${escHtml(a.isi).substring(0,180)}${a.isi.length>180?'...':''}
+    </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="edit-status">
+        ${statusOrder.map(s => `<option value="${s}" ${s===a.status?'selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field">
+      <label>Tanggapan Resmi <span style="font-weight:300;text-transform:none;letter-spacing:0">(tampil ke mahasiswa)</span></label>
+      <textarea id="edit-tanggapan" placeholder="Tulis respons resmi institusi...">${escHtml(a.tanggapan||'')}</textarea>
+    </div>
+    <div class="field">
+      <label>Catatan Publik <span style="font-weight:300;text-transform:none;letter-spacing:0">(update progress singkat)</span></label>
+      <textarea id="edit-catatan" placeholder="Contoh: Perbaikan dijadwalkan minggu depan..." style="min-height:70px">${escHtml(a.catatanPublik||'')}</textarea>
+    </div>
+    <div class="field">
+      <label>🔒 Disposisi Internal <span style="font-weight:300;text-transform:none;letter-spacing:0">(tidak tampil ke publik)</span></label>
+      <textarea id="edit-disposisi" placeholder="Catatan internal tim..." style="min-height:70px">${escHtml(a.disposisi||'')}</textarea>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn-sm" onclick="closeModal()">Batal</button>
+    <button class="btn-sm primary" onclick="saveUpdate('${a.ticketId}')">Simpan Perubahan</button>`;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+// ===== SAVE UPDATE =====
+async function saveUpdate(ticketId) {
+  const btn = document.querySelector('#modal-footer .primary');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  const payload = {
+    action: 'adminUpdate',
+    ticketId,
+    status: document.getElementById('edit-status').value,
+    tanggapan: document.getElementById('edit-tanggapan').value,
+    catatanPublik: document.getElementById('edit-catatan').value,
+    disposisi: document.getElementById('edit-disposisi').value,
+  };
+
+  try {
+    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (data.success) {
+      closeModal();
+      showToast('Aspirasi berhasil diupdate ✓', 'success');
+      await loadAll();
+    } else {
+      showToast('Gagal: ' + (data.error||'Coba lagi'), 'error');
+      btn.disabled = false;
+      btn.textContent = 'Simpan Perubahan';
+    }
+  } catch(e) {
+    showToast('Error koneksi', 'error');
+    btn.disabled = false;
+    btn.textContent = 'Simpan Perubahan';
+  }
+}
+
+// ===== MODAL =====
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ===== TOAST =====
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+</script>
+</body>
+</html>
