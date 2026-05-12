@@ -798,102 +798,380 @@ function exportPDF(){
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const data=getLaporanData();
-  const W=210,M=15;
-  let y=M;
+  if(!data.length){showToast('Tidak ada data untuk diekspor','error');return;}
 
-  // Header strip
-  doc.setFillColor(26,23,20); doc.rect(0,0,W,28,'F');
-  doc.setTextColor(232,217,176); doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text('LYTALA',M,12);
-  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
-  doc.text('Sistem Aspirasi Civitas Akademika',M,18);
-  const tgl=new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
-  doc.setTextColor(232,217,176); doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.text('LAPORAN ASPIRASI',W-M,12,{align:'right'});
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
-  doc.text('Dicetak: '+tgl,W-M,19,{align:'right'});
-  y=36;
+  const W=210, M=15, now=new Date();
+  const tgl=now.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});
+  const noLaporan='BA/LYTALA/'+now.getFullYear()+'/'+String(now.getMonth()+1).padStart(2,'0');
 
-  // Summary boxes
-  const boxes=[['Total',data.length],['Selesai',data.filter(a=>a.status==='Selesai').length],['Urgent',data.filter(a=>a.mood==='Urgent').length],['Pending',data.filter(a=>a.status==='Pending').length]];
-  const bw=(W-M*2-9)/4;
-  boxes.forEach(([l,v],i)=>{
-    const x=M+i*(bw+3);
-    doc.setFillColor(248,244,238); doc.roundedRect(x,y,bw,16,2,2,'F');
-    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
-    doc.text(String(v),x+bw/2,y+8,{align:'center'});
+  // ─── HELPER FUNCTIONS ───────────────────────────────────────────
+  function pageHeader(judul){
+    doc.setFillColor(26,23,20); doc.rect(0,0,W,24,'F');
+    doc.setTextColor(232,217,176); doc.setFontSize(16); doc.setFont('helvetica','bold');
+    doc.text('LYTALA',M,10);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
+    doc.text('Sistem Aspirasi Civitas Akademika',M,16);
+    doc.setTextColor(232,217,176); doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text(judul.toUpperCase(),W-M,10,{align:'right'});
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
-    doc.text(l,x+bw/2,y+13,{align:'center'});
-  });
-  y+=22;
+    doc.text('Dicetak: '+tgl,W-M,16,{align:'right'});
+  }
+  function pageFooter(nomor,total,noLap){
+    doc.setFontSize(6.5); doc.setTextColor(138,128,118);
+    doc.setDrawColor(220,215,205); doc.line(M,287,W-M,287);
+    doc.text('No. Dokumen: '+noLap,M,291);
+    doc.text('Lytala — "Aspirasimu telah menemukan muaranya." | Hal. '+nomor+'/'+total,W/2,291,{align:'center'});
+    doc.text('Rahasia — Dokumen Internal',W-M,291,{align:'right'});
+  }
+  function sectionTitle(txt,y){
+    doc.setFillColor(26,23,20); doc.rect(M,y,W-M*2,7,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(232,217,176);
+    doc.text(txt,M+3,y+4.5);
+    return y+7;
+  }
+  function tableHeader(cols,widths,y){
+    doc.setFillColor(237,232,224); doc.rect(M,y,W-M*2,6,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
+    let cx=M+2; cols.forEach((c,i)=>{doc.text(c,cx,y+4);cx+=widths[i];});
+    return y+6;
+  }
+  function tableRow(vals,widths,y,shade){
+    if(shade){doc.setFillColor(250,248,244);doc.rect(M,y,W-M*2,6,'F');}
+    doc.setFontSize(6.8); doc.setFont('helvetica','normal'); doc.setTextColor(60,55,50);
+    let cx=M+2; vals.forEach((v,i)=>{doc.text(String(v||'—').substring(0,Math.floor(widths[i]/1.8)),cx,y+4);cx+=widths[i];});
+    return y+6;
+  }
+  function checkPage(y,need=20){
+    if(y+need>282){doc.addPage();pageHeader('Laporan Aspirasi Lanjutan');return 30;}
+    return y;
+  }
+  function wrap(txt,maxW,doc,fs){
+    doc.setFontSize(fs||8);
+    return doc.splitTextToSize(String(txt||'—'),maxW);
+  }
 
-  // Kategori table
+  // ════════════════════════════════════════════════════════════════
+  // HALAMAN 1 — COVER & RINGKASAN EKSEKUTIF
+  // ════════════════════════════════════════════════════════════════
+  pageHeader('Laporan Aspirasi');
+  let y=30;
+
+  // Cover title box
+  doc.setFillColor(248,244,238); doc.roundedRect(M,y,W-M*2,28,3,3,'F');
+  doc.setDrawColor(184,145,58); doc.setLineWidth(0.5); doc.roundedRect(M,y,W-M*2,28,3,3,'S');
+  doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+  doc.text('LAPORAN ASPIRASI CIVITAS AKADEMIKA',W/2,y+10,{align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(138,128,118);
+  doc.text('Sistem Lytala — Dokumen Resmi Internal',W/2,y+17,{align:'center'});
+  doc.setFontSize(8); doc.setTextColor(184,145,58);
+  doc.text('No. Dokumen: '+noLaporan+' | Tanggal: '+tgl,W/2,y+23,{align:'center'});
+  y+=34;
+
+  // Ringkasan angka
+  const total=data.length;
+  const selesai=data.filter(a=>a.status==='Selesai').length;
+  const proses=data.filter(a=>['Diterima','Diskusi','Proses'].includes(a.status)).length;
+  const pending=data.filter(a=>a.status==='Pending').length;
+  const urgent=data.filter(a=>a.mood==='Urgent').length;
+  const boxes=[['Total Aspirasi',total,'184,145,58'],['Selesai',selesai,'61,90,62'],['Sedang Diproses',proses,'42,74,107'],['Urgent',urgent,'139,58,42'],['Pending',pending,'138,128,118']];
+  const bw2=(W-M*2-16)/5;
+  boxes.forEach(([l,v,rgb],i)=>{
+    const x=M+i*(bw2+4);
+    const [r,g,b]=rgb.split(',').map(Number);
+    doc.setFillColor(r,g,b); doc.roundedRect(x,y,bw2,18,2,2,'F');
+    doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text(String(v),x+bw2/2,y+10,{align:'center'});
+    doc.setFontSize(6); doc.setFont('helvetica','normal');
+    doc.text(l,x+bw2/2,y+15.5,{align:'center'});
+  });
+  y+=26;
+
+  // Ringkasan per kategori
+  y=sectionTitle('I. REKAPITULASI PER KATEGORI',y)+3;
   const kc={};
   data.forEach(a=>kc[a.kategori]=(kc[a.kategori]||0)+1);
-  const kRows=Object.entries(kc).sort((a,b)=>b[1]-a[1]);
-  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
-  doc.text('ASPIRASI PER KATEGORI',M,y); y+=5;
-  doc.setFillColor(237,232,224); doc.rect(M,y,W-M*2,6,'F');
-  doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
-  doc.text('Kategori',M+2,y+4); doc.text('Jumlah',W-M-18,y+4,{align:'right'}); doc.text('%',W-M-2,y+4,{align:'right'});
-  y+=6;
-  kRows.forEach(([k,v],i)=>{
-    if(i%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,6,'F');}
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(74,69,63);
-    doc.text(k,M+2,y+4); doc.text(String(v),W-M-18,y+4,{align:'right'});
-    doc.text((data.length?Math.round(v/data.length*100):0)+'%',W-M-2,y+4,{align:'right'});
-    y+=6;
+  y=tableHeader(['Kategori','Jumlah','% dari Total','Status Dominan'],[80,20,30,50],y);
+  Object.entries(kc).sort((a,b)=>b[1]-a[1]).forEach(([k,v],i)=>{
+    const domStatus=data.filter(a=>a.kategori===k).reduce((acc,a)=>{acc[a.status]=(acc[a.status]||0)+1;return acc;},{});
+    const dom=Object.entries(domStatus).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+    y=checkPage(y,8);
+    y=tableRow([k,String(v),Math.round(v/total*100)+'%',dom],[80,20,30,50],y,i%2===0);
   });
-  y+=6;
+  y+=4;
 
-  // Bagian table
+  // Rekapitulasi per bagian
+  y=checkPage(y,20);
+  y=sectionTitle('II. REKAPITULASI PER BAGIAN PENGERJAAN',y)+3;
   const bc={};
   data.forEach(a=>{if(a.bagian) bc[a.bagian]=(bc[a.bagian]||0)+1;});
   if(Object.keys(bc).length){
-    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
-    doc.text('BAGIAN PENGERJAAN',M,y); y+=5;
-    doc.setFillColor(237,232,224); doc.rect(M,y,W-M*2,6,'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
-    doc.text('Bagian',M+2,y+4); doc.text('Jumlah Ditugaskan',W-M-2,y+4,{align:'right'});
-    y+=6;
+    y=tableHeader(['Bagian','Ditugaskan','Selesai','Proses','Pending'],[65,25,25,25,40],y);
     Object.entries(bc).sort((a,b)=>b[1]-a[1]).forEach(([k,v],i)=>{
-      if(i%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,6,'F');}
-      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(74,69,63);
-      doc.text(k,M+2,y+4); doc.text(String(v),W-M-2,y+4,{align:'right'});
-      y+=6;
+      const inBag=data.filter(a=>a.bagian===k);
+      const sl=inBag.filter(a=>a.status==='Selesai').length;
+      const pr=inBag.filter(a=>['Diterima','Diskusi','Proses'].includes(a.status)).length;
+      const pd=inBag.filter(a=>a.status==='Pending').length;
+      y=checkPage(y,8);
+      y=tableRow([k,String(v),String(sl),String(pr),String(pd)],[65,25,25,25,40],y,i%2===0);
     });
-    y+=6;
+  } else {
+    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(138,128,118);
+    doc.text('Belum ada disposisi bagian yang ditetapkan.',M+3,y+5); y+=10;
   }
+  y+=4;
 
-  // Data table
-  doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
-  doc.text('DAFTAR ASPIRASI',M,y); y+=5;
-  const cols=['Tiket','Nama','Kategori','Mood','Status','Dikerjakan','Tanggal'];
-  const cw=[28,30,32,15,20,30,20];
-  doc.setFillColor(26,23,20); doc.rect(M,y,W-M*2,7,'F');
-  doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(232,217,176);
-  let cx=M+2; cols.forEach((c,i)=>{doc.text(c,cx,y+4.5);cx+=cw[i];}); y+=7;
+  // Rekapitulasi mood
+  y=checkPage(y,20);
+  y=sectionTitle('III. REKAPITULASI MOOD / URGENSI',y)+3;
+  const mc={};
+  data.forEach(a=>mc[a.mood]=(mc[a.mood]||0)+1);
+  y=tableHeader(['Mood/Urgensi','Jumlah','Persentase'],[80,30,70],y);
+  Object.entries(mc).sort((a,b)=>b[1]-a[1]).forEach(([k,v],i)=>{
+    y=checkPage(y,8);
+    y=tableRow([k,String(v),Math.round(v/total*100)+'%'],[80,30,70],y,i%2===0);
+  });
+  y+=6;
 
-  doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+  // Kolom tanda tangan
+  y=checkPage(y,35);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+  doc.text('Mengetahui,',M,y); doc.text('Diperiksa oleh,',W/2-20,y); doc.text('Dibuat oleh,',W-M-40,y);
+  y+=20;
+  doc.setDrawColor(26,23,20); doc.setLineWidth(0.3);
+  doc.line(M,y,M+55,y); doc.line(W/2-20,y,W/2+35,y); doc.line(W-M-40,y,W-M,y);
+  y+=4;
+  doc.setFontSize(7); doc.setTextColor(138,128,118);
+  doc.text('Pimpinan Institusi',M,y); doc.text('Admin Lytala',W/2-20,y); doc.text('Sistem Lytala',W-M-40,y);
+  doc.text('Tanggal: _______________',M,y+5);
+  doc.text('Tanggal: _______________',W/2-20,y+5);
+
+  // ════════════════════════════════════════════════════════════════
+  // HALAMAN 2+ — DAFTAR LENGKAP PER TIKET
+  // ════════════════════════════════════════════════════════════════
+  doc.addPage();
+  pageHeader('Daftar Aspirasi per Tiket');
+  y=30;
+  y=sectionTitle('IV. DAFTAR LENGKAP ASPIRASI PER TIKET',y)+5;
+
+  const colsT=['No.','ID Tiket','Nama Pengirim','Kategori','Mood','Status','Bagian Pengerjaan','Tanggal'];
+  const cwT=[8,28,32,30,16,18,30,18];
+  y=tableHeader(colsT,cwT,y);
+
   data.forEach((a,idx)=>{
-    if(y>270){doc.addPage();y=20;}
-    if(idx%2===0){doc.setFillColor(253,251,248);doc.rect(M,y,W-M*2,7,'F');}
-    doc.setFontSize(6.5);
-    cx=M+2;
-    [a.ticketId,(a.nama||'').substring(0,12),(a.kategori||'').substring(0,14),(a.mood||'').substring(0,10),a.status||'',(a.bagian||'—').substring(0,13),a.tanggal||'']
-      .forEach((v,i)=>{doc.text(v,cx,y+4.5);cx+=cw[i];});
-    y+=7;
+    y=checkPage(y,8);
+    y=tableRow([
+      String(idx+1),
+      a.ticketId||'',
+      (a.nama||'').substring(0,15),
+      (a.kategori||'').substring(0,14),
+      a.mood||'',
+      a.status||'',
+      (a.bagian||'—').substring(0,14),
+      a.tanggal||''
+    ],cwT,y,idx%2===0);
+  });
+  y+=8;
+
+  // ════════════════════════════════════════════════════════════════
+  // HALAMAN BERIKUTNYA — BERITA ACARA PER TIKET (detail lengkap)
+  // ════════════════════════════════════════════════════════════════
+  data.forEach((a,idx)=>{
+    doc.addPage();
+    pageHeader('Berita Acara Aspirasi');
+    y=30;
+
+    // Header kartu tiket
+    doc.setFillColor(26,23,20); doc.roundedRect(M,y,W-M*2,10,2,2,'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(232,217,176);
+    doc.text('BERITA ACARA ASPIRASI — '+a.ticketId,M+4,y+6.5);
+    const stClr={Pending:[138,128,118],Diterima:[42,74,107],Diskusi:[200,120,32],Proses:[139,58,42],Selesai:[61,90,62]};
+    const [sr,sg,sb2]=(stClr[a.status]||[138,128,118]);
+    doc.setFillColor(sr,sg,sb2); doc.roundedRect(W-M-28,y+2,26,6,2,2,'F');
+    doc.setFontSize(7); doc.setTextColor(255,255,255);
+    doc.text(a.status||'—',W-M-15,y+6.2,{align:'center'});
+    y+=14;
+
+    // Info grid
+    const infoRows=[
+      ['Nomor Tiket',a.ticketId||'—','Tanggal Masuk',a.tanggal||'—'],
+      ['Nama Pengirim',a.nama||'—','Email',a.email||'—'],
+      ['Kategori',a.kategori||'—','Mood/Urgensi',a.mood||'—'],
+      ['Identitas',a.identitas==='anonim'?'Anonim':'Publik','Upvotes',(a.upvotes||0)+' orang merasakan'],
+    ];
+    infoRows.forEach(([l1,v1,l2,v2])=>{
+      doc.setFillColor(248,244,238); doc.rect(M,y,W-M*2,7,'F');
+      doc.setFontSize(6.5); doc.setFont('helvetica','bold'); doc.setTextColor(138,128,118);
+      doc.text(l1.toUpperCase(),M+2,y+4); doc.text(l2.toUpperCase(),(W/2)+2,y+4);
+      doc.setFont('helvetica','normal'); doc.setTextColor(26,23,20); doc.setFontSize(7.5);
+      doc.text(String(v1).substring(0,35),M+2,y+7); doc.text(String(v2).substring(0,35),(W/2)+2,y+7);
+      y+=8.5;
+    });
+    y+=3;
+
+    // Disposisi bagian
+    doc.setFillColor(255,253,240); doc.setDrawColor(200,168,48); doc.setLineWidth(0.3);
+    doc.roundedRect(M,y,W-M*2,10,2,2,'FD');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(138,104,32);
+    doc.text('DISPOSISI — BAGIAN YANG MENGERJAKAN',M+3,y+4.5);
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(42,74,107);
+    doc.text(a.bagian||'Belum ada disposisi',M+3,y+9);
+    y+=13;
+
+    // Isi aspirasi
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
+    doc.text('ISI ASPIRASI:',M,y); y+=4;
+    doc.setFillColor(248,244,238); 
+    const isiLines=wrap(a.isi,W-M*2-6,doc,8);
+    const isiH=isiLines.length*5+6;
+    doc.rect(M,y,W-M*2,isiH,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(50,45,40);
+    doc.text(isiLines,M+3,y+5);
+    y+=isiH+5;
+
+    // Catatan disposisi internal
+    if(a.disposisi){
+      y=checkPage(y,20);
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(138,104,32);
+      doc.text('CATATAN DISPOSISI INTERNAL:',M,y); y+=4;
+      doc.setFillColor(255,253,240); doc.setDrawColor(200,168,48); doc.setLineWidth(0.2);
+      const disLines=wrap(a.disposisi,W-M*2-6,doc,8);
+      const disH=disLines.length*5+6;
+      doc.roundedRect(M,y,W-M*2,disH,1,1,'FD');
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(100,75,20);
+      doc.text(disLines,M+3,y+5);
+      y+=disH+5;
+    }
+
+    // Tanggapan resmi
+    if(a.tanggapan){
+      y=checkPage(y,20);
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(42,74,107);
+      doc.text('TANGGAPAN RESMI INSTITUSI:',M,y); y+=4;
+      doc.setFillColor(218,234,245); doc.setDrawColor(42,74,107); doc.setLineWidth(0.3);
+      const tanLines=wrap(a.tanggapan,W-M*2-6,doc,8);
+      const tanH=tanLines.length*5+6;
+      doc.roundedRect(M,y,W-M*2,tanH,1,1,'FD');
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(26,55,90);
+      doc.text(tanLines,M+3,y+5);
+      y+=tanH+5;
+    }
+
+    // Catatan publik
+    if(a.catatanPublik){
+      y=checkPage(y,15);
+      doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(61,90,62);
+      doc.text('CATATAN PUBLIK / UPDATE PROGRESS:',M,y); y+=4;
+      const cpLines=wrap(a.catatanPublik,W-M*2-6,doc,8);
+      const cpH=cpLines.length*5+6;
+      doc.setFillColor(218,234,218); doc.setDrawColor(61,90,62); doc.setLineWidth(0.2);
+      doc.roundedRect(M,y,W-M*2,cpH,1,1,'FD');
+      doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(40,65,40);
+      doc.text(cpLines,M+3,y+5);
+      y+=cpH+5;
+    }
+
+    // Timeline progress
+    y=checkPage(y,30);
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(74,69,63);
+    doc.text('TIMELINE PROGRES:',M,y); y+=5;
+    const statusOrder2=['Pending','Diterima','Diskusi','Proses','Selesai'];
+    const curIdx=statusOrder2.indexOf(a.status);
+    const stepW=(W-M*2)/5;
+    statusOrder2.forEach((s,si)=>{
+      const sx=M+si*stepW+stepW/2;
+      const isDone=si<=curIdx;
+      const isCur=si===curIdx;
+      const [cr,cg,cb]=isDone?(isCur?[184,145,58]:[61,90,62]):[200,195,188];
+      doc.setFillColor(cr,cg,cb);
+      doc.circle(sx,y+4,3,'F');
+      if(si<4){
+        doc.setDrawColor(isDone&&curIdx>si?61:200,isDone&&curIdx>si?90:195,isDone&&curIdx>si?62:188);
+        doc.setLineWidth(0.5);
+        doc.line(sx+3,y+4,sx+stepW-3,y+4);
+      }
+      doc.setFontSize(6); doc.setFont('helvetica',isCur?'bold':'normal');
+      doc.setTextColor(isCur?[184,145,58][0]:isDone?61:138,isCur?[184,145,58][1]:isDone?90:128,isCur?[184,145,58][2]:isDone?62:118);
+      doc.text(s,sx,y+10,{align:'center'});
+    });
+    y+=15;
+
+    // Status saat ini highlight
+    const [hsr,hsg,hsb]=(stClr[a.status]||[138,128,118]);
+    doc.setFillColor(hsr,hsg,hsb);
+    doc.roundedRect(M,y,W-M*2,8,2,2,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text('STATUS SAAT INI: '+((a.status||'').toUpperCase()),W/2,y+5.5,{align:'center'});
+    y+=12;
+
+    // Kolom tanda tangan berita acara
+    y=checkPage(y,40);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+    doc.text('Ditetapkan di: ________________________  pada tanggal: ________________________',M,y);
+    y+=12;
+    doc.text('Penanggung Jawab Bagian,',M,y);
+    doc.text('Admin/Operator Lytala,',W/2,y);
+    y+=18;
+    doc.setDrawColor(100,95,88); doc.setLineWidth(0.2);
+    doc.line(M,y,M+60,y); doc.line(W/2,y,W/2+60,y);
+    y+=4;
+    doc.setFontSize(6.5); doc.setTextColor(138,128,118);
+    doc.text(a.bagian||'Bagian Terkait',M,y);
+    doc.text('Admin Lytala',W/2,y);
+    doc.text('Nomor Tiket: '+a.ticketId,W-M,y,{align:'right'});
   });
 
-  // Footer
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
+  // ════════════════════════════════════════════════════════════════
+  // HALAMAN TERAKHIR — REKAPITULASI FINAL & CATATAN PENUTUP
+  // ════════════════════════════════════════════════════════════════
+  doc.addPage();
+  pageHeader('Penutup & Rekapitulasi Final');
+  y=30;
+  y=sectionTitle('V. REKAPITULASI FINAL & CATATAN PENUTUP',y)+6;
+
+  // Tabel rekapitulasi final semua tiket
+  const colsF=['No.','ID Tiket','Kategori','Bagian Pengerjaan','Status','Tanggapan'];
+  const cwF=[8,28,30,40,20,54];
+  y=tableHeader(colsF,cwF,y);
+  data.forEach((a,i)=>{
+    y=checkPage(y,8);
+    const hasTanggapan=a.tanggapan?'Ada':'Belum';
+    y=tableRow([String(i+1),a.ticketId||'',(a.kategori||'').substring(0,13),(a.bagian||'—').substring(0,18),a.status||'',hasTanggapan],cwF,y,i%2===0);
+  });
+  y+=8;
+
+  // Catatan penutup
+  y=checkPage(y,40);
+  doc.setFillColor(248,244,238); doc.roundedRect(M,y,W-M*2,36,3,3,'F');
+  doc.setDrawColor(184,145,58); doc.setLineWidth(0.4); doc.roundedRect(M,y,W-M*2,36,3,3,'S');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(26,23,20);
+  doc.text('CATATAN PENUTUP',M+4,y+7);
+  doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+  const penutup=`Laporan ini merupakan dokumentasi resmi aspirasi civitas akademika yang dihimpun melalui sistem Lytala. Total ${total} aspirasi telah tercatat, dengan ${selesai} aspirasi telah berhasil ditindaklanjuti hingga selesai, ${proses} aspirasi sedang dalam proses penanganan, dan ${pending} aspirasi masih menunggu tindakan. Dokumen ini dapat digunakan sebagai dasar evaluasi pelayanan dan perbaikan institusi secara berkelanjutan.`;
+  const penutupLines=doc.splitTextToSize(penutup,W-M*2-8);
+  doc.text(penutupLines,M+4,y+13);
+  y+=42;
+
+  // Tanda tangan penutup
+  y=checkPage(y,35);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(74,69,63);
+  doc.text('Mengetahui dan Menyetujui,',M,y); y+=18;
+  doc.setDrawColor(26,23,20); doc.setLineWidth(0.3); doc.line(M,y,M+70,y);
+  y+=4;
+  doc.setFontSize(7.5); doc.setTextColor(74,69,63);
+  doc.text('Pimpinan / Penanggung Jawab Institusi',M,y);
+  doc.setFontSize(7); doc.setTextColor(138,128,118);
+  doc.text('Tanggal: ___________________',M,y+5);
+
+  // Page numbers + footer on all pages
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=totalPages;i++){
     doc.setPage(i);
-    doc.setFontSize(7); doc.setTextColor(138,128,118);
-    doc.text('Lytala — "Aspirasimu telah menemukan muaranya." | Hal. '+i+'/'+pages,W/2,290,{align:'center'});
+    pageFooter(i,totalPages,noLaporan);
   }
-  doc.save('Laporan-Lytala-'+new Date().toISOString().slice(0,10)+'.pdf');
-  showToast('PDF berhasil diunduh ✓','success');
+
+  const fn='Laporan-Lytala-'+now.toISOString().slice(0,10)+'.pdf';
+  doc.save(fn);
+  showToast('PDF lengkap berhasil diunduh: '+fn,'success');
 }
 
 // HELPERS
