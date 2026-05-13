@@ -679,9 +679,16 @@
           <input type="text" name="nama" placeholder="Nama kamu..." />
         </div>
 
-        <div class="field">
-          <label>Email (untuk notifikasi)</label>
-          <input type="email" name="email" placeholder="email@kampus.ac.id" required />
+        <div class="field" id="field-email">
+          <label>Email <span style="font-weight:300;font-size:0.85em">(untuk notifikasi status tiket)</span></label>
+          <input type="email" name="email" id="input-email" placeholder="email@kampus.ac.id" required />
+        </div>
+
+        <div class="field" id="field-anonim-notice" style="display:none">
+          <div style="background:#f0ede8;border-radius:8px;padding:0.75rem 1rem;font-size:0.82rem;color:var(--ink-3);display:flex;align-items:flex-start;gap:8px;line-height:1.5">
+            <span style="font-size:1rem;flex-shrink:0">🎭</span>
+            <span>Mode anonim aktif. Identitasmu tidak akan ditampilkan. Simpan nomor tiket yang muncul setelah submit untuk melacak status aspirasimu.</span>
+          </div>
         </div>
 
         <div class="field">
@@ -830,6 +837,12 @@
     document.getElementById('btn-publik').classList.toggle('selected', mode === 'publik');
     document.getElementById('btn-anonim').classList.toggle('selected', mode === 'anonim');
     document.getElementById('field-nama').style.display = mode === 'anonim' ? 'none' : 'block';
+    document.getElementById('field-email').style.display = mode === 'anonim' ? 'none' : 'block';
+    document.getElementById('field-anonim-notice').style.display = mode === 'anonim' ? 'block' : 'none';
+    // Email tidak required saat anonim
+    const emailInput = document.getElementById('input-email');
+    emailInput.required = mode !== 'anonim';
+    if (mode === 'anonim') emailInput.value = '';
   }
 
   function setMood(mood, btn) {
